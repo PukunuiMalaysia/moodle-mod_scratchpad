@@ -15,18 +15,18 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Journal entries search.
+ * Scratchpad entries search.
  *
- * @package    mod_journal
+ * @package    mod_scratchpad
  * @copyright  2016 David Monllao {@link http://www.davidmonllao.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_journal\search;
+namespace mod_scratchpad\search;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/journal/lib.php');
+require_once($CFG->dirroot . '/mod/scratchpad/lib.php');
 
 function get_dynamic_parent_entry() {
     global $CFG;
@@ -36,19 +36,19 @@ function get_dynamic_parent_entry() {
         return '\core_search\base_mod';
     }
 }
-class_alias(get_dynamic_parent_entry(), '\mod_journal\search\DynamicParentEntry');
+class_alias(get_dynamic_parent_entry(), '\mod_scratchpad\search\DynamicParentEntry');
 
 /**
- * Journal entries search.
+ * Scratchpad entries search.
  *
- * @package    mod_journal
+ * @package    mod_scratchpad
  * @copyright  2016 David Monllao {@link http://www.davidmonllao.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class entry extends \mod_journal\search\DynamicParentEntry {
+class entry extends \mod_scratchpad\search\DynamicParentEntry {
 
     /**
-     * Returns recordset containing required data for indexing journal entries.
+     * Returns recordset containing required data for indexing scratchpad entries.
      *
      * @param int $modifiedfrom timestamp
      * @return moodle_recordset
@@ -56,32 +56,32 @@ class entry extends \mod_journal\search\DynamicParentEntry {
     public function get_recordset_by_timestamp($modifiedfrom = 0) {
         global $DB;
 
-        $sql = "SELECT je.*, j.course FROM {journal_entries} je
-                JOIN {journal} j ON j.id = je.journal
+        $sql = "SELECT je.*, j.course FROM {scratchpad_entries} je
+                JOIN {scratchpad} j ON j.id = je.scratchpad
                 WHERE je.modified >= ? ORDER BY je.modified ASC";
         return $DB->get_recordset_sql($sql, array($modifiedfrom));
     }
 
     /**
-     * Returns the documents associated with this journal entry id.
+     * Returns the documents associated with this scratchpad entry id.
      *
-     * @param stdClass $entry journal entry.
+     * @param stdClass $entry scratchpad entry.
      * @param array    $options
      * @return \core_search\document
      */
     public function get_document($entry, $options = array()) {
 
         try {
-            $cm = $this->get_cm('journal', $entry->journal, $entry->course);
+            $cm = $this->get_cm('scratchpad', $entry->scratchpad, $entry->course);
             $context = \context_module::instance($cm->id);
         } catch (\dml_missing_record_exception $ex) {
             // Notify it as we run here as admin, we should see everything.
-            debugging('Error retrieving mod_journal ' . $entry->id . ' document, not all required data is available: ' .
+            debugging('Error retrieving mod_scratchpad ' . $entry->id . ' document, not all required data is available: ' .
                 $ex->getMessage(), DEBUG_DEVELOPER);
             return false;
         } catch (\dml_exception $ex) {
             // Notify it as we run here as admin, we should see everything.
-            debugging('Error retrieving mod_journal' . $entry->id . ' document: ' . $ex->getMessage(), DEBUG_DEVELOPER);
+            debugging('Error retrieving mod_scratchpad' . $entry->id . ' document: ' . $ex->getMessage(), DEBUG_DEVELOPER);
             return false;
         }
 
@@ -89,7 +89,7 @@ class entry extends \mod_journal\search\DynamicParentEntry {
         $doc = \core_search\document_factory::instance($entry->id, $this->componentname, $this->areaname);
 
         // Not a nice solution to copy a subset of the content but I don't want
-        // to use a kind of "Firstname Lastname journal entry"
+        // to use a kind of "Firstname Lastname scratchpad entry"
         // because of i18n (the entry can be searched by both the student and
         // any course teacher (they all have different languages).
         $doc->set('title', shorten_text(content_to_text($entry->text, $entry->format), 50));
@@ -122,7 +122,7 @@ class entry extends \mod_journal\search\DynamicParentEntry {
 
         try {
             $entry = $this->get_entry($id);
-            $cminfo = $this->get_cm('journal', $entry->journal, $entry->course);
+            $cminfo = $this->get_cm('scratchpad', $entry->scratchpad, $entry->course);
         } catch (\dml_missing_record_exception $ex) {
             return \core_search\manager::ACCESS_DELETED;
         } catch (\dml_exception $ex) {
@@ -133,7 +133,7 @@ class entry extends \mod_journal\search\DynamicParentEntry {
             return \core_search\manager::ACCESS_DENIED;
         }
 
-        if ($entry->userid != $USER->id && !has_capability('mod/journal:manageentries', $cminfo->context)) {
+        if ($entry->userid != $USER->id && !has_capability('mod/scratchpad:manageentries', $cminfo->context)) {
             return \core_search\manager::ACCESS_DENIED;
         }
 
@@ -141,7 +141,7 @@ class entry extends \mod_journal\search\DynamicParentEntry {
     }
 
     /**
-     * Link to journal entry.
+     * Link to scratchpad entry.
      *
      * @param \core_search\document $doc
      * @return \moodle_url
@@ -153,27 +153,27 @@ class entry extends \mod_journal\search\DynamicParentEntry {
 
         $entryuserid = $doc->get('userid');
         if ($entryuserid == $USER->id) {
-            $url = '/mod/journal/view.php';
+            $url = '/mod/scratchpad/view.php';
         } else {
             // Teachers see student's entries in the report page.
-            $url = '/mod/journal/report.php#entry-' . $entryuserid;
+            $url = '/mod/scratchpad/report.php#entry-' . $entryuserid;
         }
         return new \moodle_url($url, array('id' => $contextmodule->instanceid));
     }
 
     /**
-     * Link to the journal.
+     * Link to the scratchpad.
      *
      * @param \core_search\document $doc
      * @return \moodle_url
      */
     public function get_context_url(\core_search\document $doc) {
         $contextmodule = \context::instance_by_id($doc->get('contextid'));
-        return new \moodle_url('/mod/journal/view.php', array('id' => $contextmodule->instanceid));
+        return new \moodle_url('/mod/scratchpad/view.php', array('id' => $contextmodule->instanceid));
     }
 
     /**
-     * Returns the specified journal entry checking the internal cache.
+     * Returns the specified scratchpad entry checking the internal cache.
      *
      * Store minimal information as this might grow.
      *
@@ -184,8 +184,8 @@ class entry extends \mod_journal\search\DynamicParentEntry {
     protected function get_entry($entryid) {
         global $DB;
 
-        return $DB->get_record_sql("SELECT je.*, j.course FROM {journal_entries} je
-                                    JOIN {journal} j ON j.id = je.journal
+        return $DB->get_record_sql("SELECT je.*, j.course FROM {scratchpad_entries} je
+                                    JOIN {scratchpad} j ON j.id = je.scratchpad
                                     WHERE je.id = ?", array('id' => $entryid), MUST_EXIST);
     }
 }

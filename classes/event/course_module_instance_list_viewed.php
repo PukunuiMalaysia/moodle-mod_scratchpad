@@ -15,21 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The mod_journal instance list viewed event.
+ * The mod_scratchpad instance list viewed event.
  *
- * @package    mod_journal
+ * @package    mod_scratchpad
  * @copyright  2014 drachels@drachels.com
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_journal\event;
+namespace mod_scratchpad\event;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The mod_journal instance list viewed event class.
+ * The mod_scratchpad instance list viewed event class.
  *
- * @package    mod_journal
+ * @package    mod_scratchpad
  * @since      Moodle 2.7
  * @copyright  2014 drachels@drachels.com
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

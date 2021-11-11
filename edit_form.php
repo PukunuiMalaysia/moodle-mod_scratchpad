@@ -18,10 +18,10 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/lib/formslib.php');
 
-class mod_journal_entry_form extends moodleform {
+class mod_scratchpad_entry_form extends moodleform {
 
     public function definition() {
-        $this->_form->addElement('editor', 'text_editor', get_string('entry', 'mod_journal'),
+        $this->_form->addElement('editor', 'text_editor', get_string('entry', 'mod_scratchpad'),
                 null, $this->_customdata['editoroptions']);
         $this->_form->setType('text_editor', PARAM_RAW);
         $this->_form->addRule('text_editor', null, 'required', null, 'client');

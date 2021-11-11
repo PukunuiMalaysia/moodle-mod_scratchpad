@@ -19,9 +19,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'mod_journal';
-$plugin->version  = 2020091100;
+$plugin->component = 'mod_scratchpad';
+$plugin->version  = 2021110100;
 $plugin->requires = 2017111300;  /* Moodle 3.4 */
-$plugin->release = '2.1.0 (Build: 2020091100)';
+$plugin->release = '1.0.0 (Build: 2021110100)';
 $plugin->maturity = MATURITY_STABLE;
 $plugin->cron     = 60;

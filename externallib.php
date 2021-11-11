@@ -18,12 +18,12 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once("$CFG->libdir/externallib.php");
 
-class mod_journal_external extends external_api {
+class mod_scratchpad_external extends external_api {
 
     public static function get_entry_parameters() {
         return new external_function_parameters(
             array(
-                'journalid' => new external_value(PARAM_INT, 'id of journal')
+                'scratchpadid' => new external_value(PARAM_INT, 'id of scratchpad')
             )
         );
     }
@@ -31,7 +31,7 @@ class mod_journal_external extends external_api {
     public static function get_entry_returns() {
         return new external_single_structure(
             array(
-                'text' => new external_value(PARAM_RAW, 'journal text'),
+                'text' => new external_value(PARAM_RAW, 'scratchpad text'),
                 'modified' => new external_value(PARAM_INT, 'last modified time'),
                 'rating' => new external_value(PARAM_FLOAT, 'teacher rating'),
                 'comment' => new external_value(PARAM_RAW, 'teacher comment'),
@@ -40,12 +40,12 @@ class mod_journal_external extends external_api {
         );
     }
 
-    public static function get_entry($journalid) {
+    public static function get_entry($scratchpadid) {
         global $DB, $USER;
 
-        $params = self::validate_parameters(self::get_entry_parameters(), array('journalid' => $journalid));
+        $params = self::validate_parameters(self::get_entry_parameters(), array('scratchpadid' => $scratchpadid));
 
-        if (! $cm = get_coursemodule_from_id('journal', $params['journalid'])) {
+        if (! $cm = get_coursemodule_from_id('scratchpad', $params['scratchpadid'])) {
             throw new invalid_parameter_exception('Course Module ID was incorrect');
         }
 
@@ -53,15 +53,15 @@ class mod_journal_external extends external_api {
             throw new invalid_parameter_exception("Course is misconfigured");
         }
 
-        if (! $journal = $DB->get_record("journal", array("id" => $cm->instance))) {
+        if (! $scratchpad = $DB->get_record("scratchpad", array("id" => $cm->instance))) {
             throw new invalid_parameter_exception("Course module is incorrect");
         }
 
         $context = context_module::instance($cm->id);
         self::validate_context($context);;
-        require_capability('mod/journal:addentries', $context);
+        require_capability('mod/scratchpad:addentries', $context);
 
-        if ($entry = $DB->get_record('journal_entries', array('userid' => $USER->id, 'journal' => $journal->id))) {
+        if ($entry = $DB->get_record('scratchpad_entries', array('userid' => $USER->id, 'scratchpad' => $scratchpad->id))) {
             return array(
                 'text' => $entry->text,
                 'modified' => $entry->modified,
@@ -78,7 +78,7 @@ class mod_journal_external extends external_api {
     public static function set_text_parameters() {
         return new external_function_parameters(
             array(
-                'journalid' => new external_value(PARAM_INT, 'id of journal'),
+                'scratchpadid' => new external_value(PARAM_INT, 'id of scratchpad'),
                 'text' => new external_value(PARAM_RAW, 'text to set'),
                 'format' => new external_value(PARAM_INT, 'format of text')
             )
@@ -89,15 +89,15 @@ class mod_journal_external extends external_api {
         return new external_value(PARAM_RAW, 'new text');
     }
 
-    public static function set_text($journalid, $text, $format) {
+    public static function set_text($scratchpadid, $text, $format) {
         global $DB, $USER;
 
         $params = self::validate_parameters(
             self::set_text_parameters(),
-            array('journalid' => $journalid, 'text' => $text, 'format' => $format)
+            array('scratchpadid' => $scratchpadid, 'text' => $text, 'format' => $format)
         );
 
-        if (! $cm = get_coursemodule_from_id('journal', $params['journalid'])) {
+        if (! $cm = get_coursemodule_from_id('scratchpad', $params['scratchpadid'])) {
             throw new invalid_parameter_exception('Course Module ID was incorrect');
         }
 
@@ -105,15 +105,15 @@ class mod_journal_external extends external_api {
             throw new invalid_parameter_exception("Course is misconfigured");
         }
 
-        if (! $journal = $DB->get_record("journal", array("id" => $cm->instance))) {
+        if (! $scratchpad = $DB->get_record("scratchpad", array("id" => $cm->instance))) {
             throw new invalid_parameter_exception("Course module is incorrect");
         }
 
         $context = context_module::instance($cm->id);
         self::validate_context($context);;
-        require_capability('mod/journal:addentries', $context);
+        require_capability('mod/scratchpad:addentries', $context);
 
-        $entry = $DB->get_record('journal_entries', array('userid' => $USER->id, 'journal' => $journal->id));
+        $entry = $DB->get_record('scratchpad_entries', array('userid' => $USER->id, 'scratchpad' => $scratchpad->id));
 
         $timenow = time();
         $newentry = new stdClass();
@@ -123,30 +123,30 @@ class mod_journal_external extends external_api {
 
         if ($entry) {
             $newentry->id = $entry->id;
-            $DB->update_record("journal_entries", $newentry);
+            $DB->update_record("scratchpad_entries", $newentry);
         } else {
             $newentry->userid = $USER->id;
-            $newentry->journal = $journal->id;
-            $newentry->id = $DB->insert_record("journal_entries", $newentry);
+            $newentry->scratchpad = $scratchpad->id;
+            $newentry->id = $DB->insert_record("scratchpad_entries", $newentry);
         }
 
         if ($entry) {
             // Trigger module entry updated event.
-            $event = \mod_journal\event\entry_updated::create(array(
-                'objectid' => $journal->id,
+            $event = \mod_scratchpad\event\entry_updated::create(array(
+                'objectid' => $scratchpad->id,
                 'context' => $context
             ));
         } else {
             // Trigger module entry created event.
-            $event = \mod_journal\event\entry_created::create(array(
-                'objectid' => $journal->id,
+            $event = \mod_scratchpad\event\entry_created::create(array(
+                'objectid' => $scratchpad->id,
                 'context' => $context
             ));
 
         }
         $event->add_record_snapshot('course_modules', $cm);
         $event->add_record_snapshot('course', $course);
-        $event->add_record_snapshot('journal', $journal);
+        $event->add_record_snapshot('scratchpad', $scratchpad);
         $event->trigger();
 
         return $newentry->text;

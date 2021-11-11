@@ -20,7 +20,7 @@ require_once("lib.php");
 
 $id = required_param('id', PARAM_INT);   // Course module.
 
-if (! $cm = get_coursemodule_from_id('journal', $id)) {
+if (! $cm = get_coursemodule_from_id('scratchpad', $id)) {
     print_error("Course Module ID was incorrect");
 }
 
@@ -32,26 +32,26 @@ require_login($course, false, $cm);
 
 $context = context_module::instance($cm->id);
 
-require_capability('mod/journal:manageentries', $context);
+require_capability('mod/scratchpad:manageentries', $context);
 
 
-if (! $journal = $DB->get_record("journal", array("id" => $cm->instance))) {
+if (! $scratchpad = $DB->get_record("scratchpad", array("id" => $cm->instance))) {
     print_error("Course module is incorrect");
 }
 
 // Header.
-$PAGE->set_url('/mod/journal/report.php', array('id' => $id));
+$PAGE->set_url('/mod/scratchpad/report.php', array('id' => $id));
 
-$PAGE->navbar->add(get_string("entries", "journal"));
-$PAGE->set_title(get_string("modulenameplural", "journal"));
+$PAGE->navbar->add(get_string("entries", "scratchpad"));
+$PAGE->set_title(get_string("modulenameplural", "scratchpad"));
 $PAGE->set_heading($course->fullname);
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string("entries", "journal"));
+echo $OUTPUT->heading(get_string("entries", "scratchpad"));
 
 
 // Make some easy ways to access the entries.
-if ( $eee = $DB->get_records("journal_entries", array("journal" => $journal->id))) {
+if ( $eee = $DB->get_records("scratchpad_entries", array("scratchpad" => $scratchpad->id))) {
     foreach ($eee as $ee) {
         $entrybyuser[$ee->userid] = $ee;
         $entrybyentry[$ee->id]  = $ee;
@@ -110,8 +110,8 @@ if ($data = data_submitted()) {
             $newentry->timemarked   = $timenow;
             $newentry->mailed       = 0;           // Make sure mail goes out (again, even).
             $newentry->id           = $num;
-            if (!$DB->update_record("journal_entries", $newentry)) {
-                echo $OUTPUT->notification("Failed to update the journal feedback for user $entry->userid");
+            if (!$DB->update_record("scratchpad_entries", $newentry)) {
+                echo $OUTPUT->notification("Failed to update the scratchpad feedback for user $entry->userid");
             } else {
                 $count++;
             }
@@ -120,76 +120,76 @@ if ($data = data_submitted()) {
             $entrybyuser[$entry->userid]->teacher    = $USER->id;
             $entrybyuser[$entry->userid]->timemarked = $timenow;
 
-            $journal = $DB->get_record("journal", array("id" => $entrybyuser[$entry->userid]->journal));
-            $journal->cmidnumber = $cm->idnumber;
+            $scratchpad = $DB->get_record("scratchpad", array("id" => $entrybyuser[$entry->userid]->scratchpad));
+            $scratchpad->cmidnumber = $cm->idnumber;
 
-            journal_update_grades($journal, $entry->userid);
+            scratchpad_update_grades($scratchpad, $entry->userid);
         }
     }
 
     // Trigger module feedback updated event.
-    $event = \mod_journal\event\feedback_updated::create(array(
-        'objectid' => $journal->id,
+    $event = \mod_scratchpad\event\feedback_updated::create(array(
+        'objectid' => $scratchpad->id,
         'context' => $context
     ));
     $event->add_record_snapshot('course_modules', $cm);
     $event->add_record_snapshot('course', $course);
-    $event->add_record_snapshot('journal', $journal);
+    $event->add_record_snapshot('scratchpad', $scratchpad);
     $event->trigger();
 
-    echo $OUTPUT->notification(get_string("feedbackupdated", "journal", "$count"), "notifysuccess");
+    echo $OUTPUT->notification(get_string("feedbackupdated", "scratchpad", "$count"), "notifysuccess");
 
 } else {
 
     // Trigger module viewed event.
-    $event = \mod_journal\event\entries_viewed::create(array(
-        'objectid' => $journal->id,
+    $event = \mod_scratchpad\event\entries_viewed::create(array(
+        'objectid' => $scratchpad->id,
         'context' => $context
     ));
     $event->add_record_snapshot('course_modules', $cm);
     $event->add_record_snapshot('course', $course);
-    $event->add_record_snapshot('journal', $journal);
+    $event->add_record_snapshot('scratchpad', $scratchpad);
     $event->trigger();
 }
 
-// Print out the journal entries.
+// Print out the scratchpad entries.
 
 if ($currentgroup) {
     $groups = $currentgroup;
 } else {
     $groups = '';
 }
-$users = get_users_by_capability($context, 'mod/journal:addentries', '', '', '', '', $groups);
+$users = get_users_by_capability($context, 'mod/scratchpad:addentries', '', '', '', '', $groups);
 
 if (!$users) {
     echo $OUTPUT->heading(get_string("nousersyet"));
 
 } else {
 
-    groups_print_activity_menu($cm, $CFG->wwwroot . "/mod/journal/report.php?id=$cm->id");
+    groups_print_activity_menu($cm, $CFG->wwwroot . "/mod/scratchpad/report.php?id=$cm->id");
 
-    $grades = make_grades_menu($journal->grade);
-    if (!$teachers = get_users_by_capability($context, 'mod/journal:manageentries')) {
-        print_error('noentriesmanagers', 'journal');
+    $grades = make_grades_menu($scratchpad->grade);
+    if (!$teachers = get_users_by_capability($context, 'mod/scratchpad:manageentries')) {
+        print_error('noentriesmanagers', 'scratchpad');
     }
 
     echo '<form action="report.php" method="post">';
 
-    if ($usersdone = journal_get_users_done($journal, $currentgroup)) {
+    if ($usersdone = scratchpad_get_users_done($scratchpad, $currentgroup)) {
         foreach ($usersdone as $user) {
-            journal_print_user_entry($course, $user, $entrybyuser[$user->id], $teachers, $grades);
+            scratchpad_print_user_entry($course, $user, $entrybyuser[$user->id], $teachers, $grades);
             unset($users[$user->id]);
         }
     }
 
     foreach ($users as $user) {       // Remaining users.
-        journal_print_user_entry($course, $user, null, $teachers, $grades);
+        scratchpad_print_user_entry($course, $user, null, $teachers, $grades);
     }
 
     echo "<p class=\"feedbacksave\">";
     echo "<input type=\"hidden\" name=\"id\" value=\"$cm->id\" />";
     echo "<input type=\"hidden\" name=\"sesskey\" value=\"" . sesskey() . "\" />";
-    echo "<input type=\"submit\" value=\"".get_string("saveallfeedback", "journal")."\" class=\"btn btn-secondary m-t-1\"/>";
+    echo "<input type=\"submit\" value=\"".get_string("saveallfeedback", "scratchpad")."\" class=\"btn btn-secondary m-t-1\"/>";
     echo "</p>";
     echo "</form>";
 }

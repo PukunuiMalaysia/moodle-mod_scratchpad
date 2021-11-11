@@ -15,14 +15,14 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Search area for mod_journal activities.
+ * Search area for mod_scratchpad activities.
  *
- * @package    mod_journal
+ * @package    mod_scratchpad
  * @copyright  2016 David Monllao {@link http://www.davidmonllao.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_journal\search;
+namespace mod_scratchpad\search;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -34,17 +34,17 @@ function get_dynamic_parent_activity() {
         return '\core_search\base_activity';
     }
 }
-class_alias(get_dynamic_parent_activity(), '\mod_journal\search\DynamicParentActivity');
+class_alias(get_dynamic_parent_activity(), '\mod_scratchpad\search\DynamicParentActivity');
 
 
 /**
- * Search area for mod_journal activities.
+ * Search area for mod_scratchpad activities.
  *
- * @package    mod_journal
+ * @package    mod_scratchpad
  * @copyright  2016 David Monllao {@link http://www.davidmonllao.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class activity extends \mod_journal\search\DynamicParentActivity {
+class activity extends \mod_scratchpad\search\DynamicParentActivity {
 
 }
 

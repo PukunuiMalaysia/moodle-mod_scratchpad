@@ -1,8 +1,8 @@
-@mod @mod_journal
-Feature: Students can add and edit entries to journal activities
+@mod @mod_scratchpad
+Feature: Students can add and edit entries to scratchpad activities
   In order to express and refine my thoughts
   As a student
-  I need to add and update my journal entry
+  I need to add and update my scratchpad entry
 
   Scenario: A student edits his/her entry
     Given the following "courses" exist:
@@ -18,18 +18,18 @@ Feature: Students can add and edit entries to journal activities
       | student1 | C1 | student |
     And the following "activities" exist:
       | activity | name               | intro            | course | idnumber |
-      | journal  | Test journal name  | Journal question | C1     | journal1 |
+      | scratchpad  | Test scratchpad name  | Scratchpad question | C1     | scratchpad1 |
     And I log in as "student1"
     And I am on "Course1" course homepage
-    And I follow "Test journal name"
-    And I press "Start or edit my journal entry"
+    And I follow "Test scratchpad name"
+    And I press "Start or edit my scratchpad entry"
     And I set the following fields to these values:
       | Entry | First reply |
     And I press "Save changes"
-    And I press "Start or edit my journal entry"
+    And I press "Start or edit my scratchpad entry"
     Then the field "Entry" matches value "First reply"
     And I set the following fields to these values:
       | Entry | Second reply |
     And I press "Save changes"
-    And I press "Start or edit my journal entry"
+    And I press "Start or edit my scratchpad entry"
     And the field "Entry" matches value "Second reply"

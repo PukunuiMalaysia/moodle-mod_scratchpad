@@ -17,9 +17,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Journal conversion handler
+ * Scratchpad conversion handler
  */
-class moodle1_mod_journal_handler extends moodle1_mod_handler {
+class moodle1_mod_scratchpad_handler extends moodle1_mod_handler {
 
     /**
      * Declare the paths in moodle.xml we are able to convert
@@ -33,19 +33,19 @@ class moodle1_mod_journal_handler extends moodle1_mod_handler {
     public function get_paths() {
         return array(
             new convert_path(
-                'journal', '/MOODLE_BACKUP/COURSE/MODULES/MOD/JOURNAL',
+                'scratchpad', '/MOODLE_BACKUP/COURSE/MODULES/MOD/SCRATCHPAD',
                 array(
                     'renamefields' => array(
                         'assessed' => 'grade'
                     )
                 )
             ),
-            new convert_path('entries', '/MOODLE_BACKUP/COURSE/MODULES/MOD/JOURNAL/ENTRIES'),
-            new convert_path('entry', '/MOODLE_BACKUP/COURSE/MODULES/MOD/JOURNAL/ENTRIES/ENTRY'),
+            new convert_path('entries', '/MOODLE_BACKUP/COURSE/MODULES/MOD/SCRATCHPAD/ENTRIES'),
+            new convert_path('entry', '/MOODLE_BACKUP/COURSE/MODULES/MOD/SCRATCHPAD/ENTRIES/ENTRY'),
         );
     }
 
-    public function process_journal($data) {
+    public function process_scratchpad($data) {
 
         // Get the course module id and context id.
         $instanceid = $data['id'];
@@ -54,10 +54,10 @@ class moodle1_mod_journal_handler extends moodle1_mod_handler {
         $contextid  = $this->converter->get_contextid(CONTEXT_MODULE, $moduleid);
 
         // We now have all information needed to start writing into the file.
-        $this->open_xml_writer("activities/journal_{$moduleid}/journal.xml");
+        $this->open_xml_writer("activities/scratchpad_{$moduleid}/scratchpad.xml");
         $this->xmlwriter->begin_tag('activity', array('id' => $instanceid, 'moduleid' => $moduleid,
-            'modulename' => 'journal', 'contextid' => $contextid));
-        $this->xmlwriter->begin_tag('journal', array('id' => $instanceid));
+            'modulename' => 'scratchpad', 'contextid' => $contextid));
+        $this->xmlwriter->begin_tag('scratchpad', array('id' => $instanceid));
 
         unset($data['id']);
         foreach ($data as $field => $value) {
@@ -75,7 +75,7 @@ class moodle1_mod_journal_handler extends moodle1_mod_handler {
     }
 
     /**
-     * This is executed every time we have one /MOODLE_BACKUP/COURSE/MODULES/MOD/JOURNAL/ENTRIES/ENTRY
+     * This is executed every time we have one /MOODLE_BACKUP/COURSE/MODULES/MOD/SCRATCHPAD/ENTRIES/ENTRY
      * data available
      */
     public function process_entry($data) {
@@ -90,11 +90,11 @@ class moodle1_mod_journal_handler extends moodle1_mod_handler {
     }
 
     /**
-     * This is executed when we reach the closing </MOD> tag of our 'journal' path
+     * This is executed when we reach the closing </MOD> tag of our 'scratchpad' path
      */
-    public function on_journal_end() {
+    public function on_scratchpad_end() {
 
-        $this->xmlwriter->end_tag('journal');
+        $this->xmlwriter->end_tag('scratchpad');
         $this->xmlwriter->end_tag('activity');
         $this->close_xml_writer();
     }

@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This page lists all the instances of journal in a particular course
+ * This page lists all the instances of scratchpad in a particular course
  *
- * @package mod_journal
+ * @package mod_scratchpad
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
@@ -37,18 +37,18 @@ require_course_login($course);
 
 
 // Header.
-$strjournals = get_string("modulenameplural", "journal");
+$strscratchpads = get_string("modulenameplural", "scratchpad");
 $PAGE->set_pagelayout('incourse');
-$PAGE->set_url('/mod/journal/index.php', array('id' => $id));
-$PAGE->navbar->add($strjournals);
-$PAGE->set_title($strjournals);
+$PAGE->set_url('/mod/scratchpad/index.php', array('id' => $id));
+$PAGE->navbar->add($strscratchpads);
+$PAGE->set_title($strscratchpads);
 $PAGE->set_heading($course->fullname);
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading($strjournals);
+echo $OUTPUT->heading($strscratchpads);
 
-if (! $journals = get_all_instances_in_course("journal", $course)) {
-    notice(get_string('thereareno', 'moodle', get_string("modulenameplural", "journal")), "../../course/view.php?id=$course->id");
+if (! $scratchpads = get_all_instances_in_course("scratchpad", $course)) {
+    notice(get_string('thereareno', 'moodle', get_string("modulenameplural", "scratchpad")), "../../course/view.php?id=$course->id");
     die;
 }
 
@@ -79,46 +79,46 @@ $table->align[] = 'left';
 
 $currentsection = '';
 $i = 0;
-foreach ($journals as $journal) {
+foreach ($scratchpads as $scratchpad) {
 
-    $context = context_module::instance($journal->coursemodule);
-    $entriesmanager = has_capability('mod/journal:manageentries', $context);
+    $context = context_module::instance($scratchpad->coursemodule);
+    $entriesmanager = has_capability('mod/scratchpad:manageentries', $context);
 
     // Section.
     $printsection = '';
-    if ($journal->section !== $currentsection) {
-        if ($journal->section) {
-            $printsection = get_section_name($course, $sections[$journal->section]);
+    if ($scratchpad->section !== $currentsection) {
+        if ($scratchpad->section) {
+            $printsection = get_section_name($course, $sections[$scratchpad->section]);
         }
         if ($currentsection !== '') {
             $table->data[$i] = 'hr';
             $i++;
         }
-        $currentsection = $journal->section;
+        $currentsection = $scratchpad->section;
     }
     if ($usesections) {
         $table->data[$i][] = $printsection;
     }
 
     // Link.
-    $journalname = format_string($journal->name, true, array('context' => $context));
-    if (!$journal->visible) {
+    $scratchpadname = format_string($scratchpad->name, true, array('context' => $context));
+    if (!$scratchpad->visible) {
         // Show dimmed if the mod is hidden.
-        $table->data[$i][] = "<a class=\"dimmed\" href=\"view.php?id=$journal->coursemodule\">".$journalname."</a>";
+        $table->data[$i][] = "<a class=\"dimmed\" href=\"view.php?id=$scratchpad->coursemodule\">".$scratchpadname."</a>";
     } else {
         // Show normal if the mod is visible.
-        $table->data[$i][] = "<a href=\"view.php?id=$journal->coursemodule\">".$journalname."</a>";
+        $table->data[$i][] = "<a href=\"view.php?id=$scratchpad->coursemodule\">".$scratchpadname."</a>";
     }
 
     // Description.
-    $table->data[$i][] = format_text($journal->intro,  $journal->introformat, array('context' => $context));
+    $table->data[$i][] = format_text($scratchpad->intro,  $scratchpad->introformat, array('context' => $context));
 
     // Entries info.
     if ($entriesmanager) {
 
         // Display the report.php col only if is a entries manager in some CONTEXT_MODULE.
         if (empty($managersomewhere)) {
-            $table->head[] = get_string('viewentries', 'journal');
+            $table->head[] = get_string('viewentries', 'scratchpad');
             $table->align[] = 'left';
             $managersomewhere = true;
 
@@ -131,9 +131,9 @@ foreach ($journals as $journal) {
             }
         }
 
-        $entrycount = journal_count_entries($journal, groups_get_all_groups($course->id, $USER->id));
-        $table->data[$i][] = "<a href=\"report.php?id=$journal->coursemodule\">".
-            get_string("viewallentries", "journal", $entrycount)."</a>";
+        $entrycount = scratchpad_count_entries($scratchpad, groups_get_all_groups($course->id, $USER->id));
+        $table->data[$i][] = "<a href=\"report.php?id=$scratchpad->coursemodule\">".
+            get_string("viewallentries", "scratchpad", $entrycount)."</a>";
     } else if (!empty($managersomewhere)) {
         $table->data[$i][] = "";
     }
@@ -149,7 +149,7 @@ echo html_writer::table($table);
 $params = array(
     'context' => context_course::instance($course->id)
 );
-$event = \mod_journal\event\course_module_instance_list_viewed::create($params);
+$event = \mod_scratchpad\event\course_module_instance_list_viewed::create($params);
 $event->add_record_snapshot('course', $course);
 $event->trigger();
 

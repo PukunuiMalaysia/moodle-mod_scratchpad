@@ -23,38 +23,38 @@ defined('MOODLE_INTERNAL') || die();
  * (defined by the form in mod.html) this function
  * will create a new instance and return the id number
  * of the new instance.
- * @param object $journal Object containing required journal properties
- * @return int Journal ID
+ * @param object $scratchpad Object containing required scratchpad properties
+ * @return int Scratchpad ID
  */
-function journal_add_instance($journal) {
+function scratchpad_add_instance($scratchpad) {
     global $DB;
 
-    $journal->timemodified = time();
-    $journal->id = $DB->insert_record("journal", $journal);
+    $scratchpad->timemodified = time();
+    $scratchpad->id = $DB->insert_record("scratchpad", $scratchpad);
 
-    journal_grade_item_update($journal);
+    scratchpad_grade_item_update($scratchpad);
 
-    return $journal->id;
+    return $scratchpad->id;
 }
 
 /**
  * Given an object containing all the necessary data,
  * (defined by the form in mod.html) this function
  * will update an existing instance with new data.
- * @param object $journal Object containing required journal properties
+ * @param object $scratchpad Object containing required scratchpad properties
  * @return boolean True if successful
  */
-function journal_update_instance($journal) {
+function scratchpad_update_instance($scratchpad) {
     global $DB;
 
-    $journal->timemodified = time();
-    $journal->id = $journal->instance;
+    $scratchpad->timemodified = time();
+    $scratchpad->id = $scratchpad->instance;
 
-    $result = $DB->update_record("journal", $journal);
+    $result = $DB->update_record("scratchpad", $scratchpad);
 
-    journal_grade_item_update($journal);
+    scratchpad_grade_item_update($scratchpad);
 
-    journal_update_grades($journal, 0, false);
+    scratchpad_update_grades($scratchpad, 0, false);
 
     return $result;
 }
@@ -63,23 +63,23 @@ function journal_update_instance($journal) {
  * Given an ID of an instance of this module,
  * this function will permanently delete the instance
  * nd any data that depends on it.
- * @param int $id Journal ID
+ * @param int $id Scratchpad ID
  * @return boolean True if successful
  */
-function journal_delete_instance($id) {
+function scratchpad_delete_instance($id) {
     global $DB;
 
     $result = true;
 
-    if (! $journal = $DB->get_record("journal", array("id" => $id))) {
+    if (! $scratchpad = $DB->get_record("scratchpad", array("id" => $id))) {
         return false;
     }
 
-    if (! $DB->delete_records("journal_entries", array("journal" => $journal->id))) {
+    if (! $DB->delete_records("scratchpad_entries", array("scratchpad" => $scratchpad->id))) {
         $result = false;
     }
 
-    if (! $DB->delete_records("journal", array("id" => $journal->id))) {
+    if (! $DB->delete_records("scratchpad", array("id" => $scratchpad->id))) {
         $result = false;
     }
 
@@ -87,7 +87,7 @@ function journal_delete_instance($id) {
 }
 
 
-function journal_supports($feature) {
+function scratchpad_supports($feature) {
     switch($feature) {
         case FEATURE_MOD_INTRO:
             return true;
@@ -113,21 +113,21 @@ function journal_supports($feature) {
 }
 
 
-function journal_get_view_actions() {
+function scratchpad_get_view_actions() {
     return array('view', 'view all', 'view responses');
 }
 
 
-function journal_get_post_actions() {
+function scratchpad_get_post_actions() {
     return array('add entry', 'update entry', 'update feedback');
 }
 
 
-function journal_user_outline($course, $user, $mod, $journal) {
+function scratchpad_user_outline($course, $user, $mod, $scratchpad) {
 
     global $DB;
 
-    if ($entry = $DB->get_record("journal_entries", array("userid" => $user->id, "journal" => $journal->id))) {
+    if ($entry = $DB->get_record("scratchpad_entries", array("userid" => $user->id, "scratchpad" => $scratchpad->id))) {
 
         $numwords = count(preg_split("/\w\b/", $entry->text)) - 1;
 
@@ -140,11 +140,11 @@ function journal_user_outline($course, $user, $mod, $journal) {
 }
 
 
-function journal_user_complete($course, $user, $mod, $journal) {
+function scratchpad_user_complete($course, $user, $mod, $scratchpad) {
 
     global $DB, $OUTPUT;
 
-    if ($entry = $DB->get_record("journal_entries", array("userid" => $user->id, "journal" => $journal->id))) {
+    if ($entry = $DB->get_record("scratchpad_entries", array("userid" => $user->id, "scratchpad" => $scratchpad->id))) {
 
         echo $OUTPUT->box_start();
 
@@ -152,30 +152,30 @@ function journal_user_complete($course, $user, $mod, $journal) {
             echo "<p><font size=\"1\">".get_string("lastedited").": ".userdate($entry->modified)."</font></p>";
         }
         if ($entry->text) {
-            echo journal_format_entry_text($entry, $course, $mod);
+            echo scratchpad_format_entry_text($entry, $course, $mod);
         }
         if ($entry->teacher) {
-            $grades = make_grades_menu($journal->grade);
-            journal_print_feedback($course, $entry, $grades);
+            $grades = make_grades_menu($scratchpad->grade);
+            scratchpad_print_feedback($course, $entry, $grades);
         }
 
         echo $OUTPUT->box_end();
 
     } else {
-        print_string("noentry", "journal");
+        print_string("noentry", "scratchpad");
     }
 }
 
 /**
  * Function to be run periodically according to the moodle cron.
- * Finds all journal notifications that have yet to be mailed out, and mails them.
+ * Finds all scratchpad notifications that have yet to be mailed out, and mails them.
  */
-function journal_cron () {
+function scratchpad_cron () {
     global $CFG, $USER, $DB;
 
     $cutofftime = time() - $CFG->maxeditingtime;
 
-    if ($entries = journal_get_unmailed_graded($cutofftime)) {
+    if ($entries = scratchpad_get_unmailed_graded($cutofftime)) {
         $timenow = time();
 
         $usernamefields = get_all_user_name_fields();
@@ -188,7 +188,7 @@ function journal_cron () {
 
         foreach ($entries as $entry) {
 
-            echo "Processing journal entry $entry->id\n";
+            echo "Processing scratchpad entry $entry->id\n";
 
             if (!empty($users[$entry->userid])) {
                 $user = $users[$entry->userid];
@@ -223,50 +223,50 @@ function journal_cron () {
             }
 
             // All cached.
-            $coursejournals = get_fast_modinfo($course)->get_instances_of('journal');
-            if (empty($coursejournals) || empty($coursejournals[$entry->journal])) {
-                echo "Could not find course module for journal id $entry->journal\n";
+            $coursescratchpads = get_fast_modinfo($course)->get_instances_of('scratchpad');
+            if (empty($coursescratchpads) || empty($coursescratchpads[$entry->scratchpad])) {
+                echo "Could not find course module for scratchpad id $entry->scratchpad\n";
                 continue;
             }
-            $mod = $coursejournals[$entry->journal];
+            $mod = $coursescratchpads[$entry->scratchpad];
 
             // This is already cached internally.
             $context = context_module::instance($mod->id);
-            $canadd = has_capability('mod/journal:addentries', $context, $user);
-            $entriesmanager = has_capability('mod/journal:manageentries', $context, $user);
+            $canadd = has_capability('mod/scratchpad:addentries', $context, $user);
+            $entriesmanager = has_capability('mod/scratchpad:manageentries', $context, $user);
 
             if (!$canadd and $entriesmanager) {
                 continue;  // Not an active participant.
             }
 
-            $journalinfo = new stdClass();
-            $journalinfo->teacher = fullname($teacher);
-            $journalinfo->journal = format_string($entry->name, true);
-            $journalinfo->url = "$CFG->wwwroot/mod/journal/view.php?id=$mod->id";
-            $modnamepl = get_string( 'modulenameplural', 'journal' );
-            $msubject = get_string( 'mailsubject', 'journal' );
+            $scratchpadinfo = new stdClass();
+            $scratchpadinfo->teacher = fullname($teacher);
+            $scratchpadinfo->scratchpad = format_string($entry->name, true);
+            $scratchpadinfo->url = "$CFG->wwwroot/mod/scratchpad/view.php?id=$mod->id";
+            $modnamepl = get_string( 'modulenameplural', 'scratchpad' );
+            $msubject = get_string( 'mailsubject', 'scratchpad' );
 
             $postsubject = "$course->shortname: $msubject: ".format_string($entry->name, true);
             $posttext  = "$course->shortname -> $modnamepl -> ".format_string($entry->name, true)."\n";
             $posttext .= "---------------------------------------------------------------------\n";
-            $posttext .= get_string("journalmail", "journal", $journalinfo)."\n";
+            $posttext .= get_string("scratchpadmail", "scratchpad", $scratchpadinfo)."\n";
             $posttext .= "---------------------------------------------------------------------\n";
             if ($user->mailformat == 1) {  // HTML.
                 $posthtml = "<p><font face=\"sans-serif\">".
                 "<a href=\"$CFG->wwwroot/course/view.php?id=$course->id\">$course->shortname</a> ->".
-                "<a href=\"$CFG->wwwroot/mod/journal/index.php?id=$course->id\">journals</a> ->".
-                "<a href=\"$CFG->wwwroot/mod/journal/view.php?id=$mod->id\">".format_string($entry->name, true)."</a></font></p>";
+                "<a href=\"$CFG->wwwroot/mod/scratchpad/index.php?id=$course->id\">scratchpads</a> ->".
+                "<a href=\"$CFG->wwwroot/mod/scratchpad/view.php?id=$mod->id\">".format_string($entry->name, true)."</a></font></p>";
                 $posthtml .= "<hr /><font face=\"sans-serif\">";
-                $posthtml .= "<p>".get_string("journalmailhtml", "journal", $journalinfo)."</p>";
+                $posthtml .= "<p>".get_string("scratchpadmailhtml", "scratchpad", $scratchpadinfo)."</p>";
                 $posthtml .= "</font><hr />";
             } else {
                 $posthtml = "";
             }
 
             if (! email_to_user($user, $teacher, $postsubject, $posttext, $posthtml)) {
-                echo "Error: Journal cron: Could not send out mail for id $entry->id to user $user->id ($user->email)\n";
+                echo "Error: Scratchpad cron: Could not send out mail for id $entry->id to user $user->id ($user->email)\n";
             }
-            if (!$DB->set_field("journal_entries", "mailed", "1", array("id" => $entry->id))) {
+            if (!$DB->set_field("scratchpad_entries", "mailed", "1", array("id" => $entry->id))) {
                 echo "Could not update the mailed field for id $entry->id\n";
             }
         }
@@ -277,7 +277,7 @@ function journal_cron () {
 
 /**
  * Given a course and a time, this module should find recent activity
- * that has occurred in journal activities and print it out.
+ * that has occurred in scratchpad activities and print it out.
  * Return true if there was output, or false if there was none.
  *
  * @global stdClass $DB
@@ -287,18 +287,18 @@ function journal_cron () {
  * @param int $timestart
  * @return bool
  */
-function journal_print_recent_activity($course, $viewfullnames, $timestart) {
+function scratchpad_print_recent_activity($course, $viewfullnames, $timestart) {
     global $CFG, $USER, $DB, $OUTPUT;
 
-    if (!get_config('journal', 'showrecentactivity')) {
+    if (!get_config('scratchpad', 'showrecentactivity')) {
         return false;
     }
 
-    $dbparams = array($timestart, $course->id, 'journal');
+    $dbparams = array($timestart, $course->id, 'scratchpad');
     $namefields = user_picture::fields('u', null, 'userid');
     $sql = "SELECT je.id, je.modified, cm.id AS cmid, $namefields
-         FROM {journal_entries} je
-              JOIN {journal} j         ON j.id = je.journal
+         FROM {scratchpad_entries} je
+              JOIN {scratchpad} j         ON j.id = je.scratchpad
               JOIN {course_modules} cm ON cm.instance = j.id
               JOIN {modules} md        ON md.id = cm.module
               JOIN {user} u            ON u.id = je.userid
@@ -330,7 +330,7 @@ function journal_print_recent_activity($course, $viewfullnames, $timestart) {
         $context = context_module::instance($anentry->cmid);
 
         // Only teachers can see other students entries.
-        if (!has_capability('mod/journal:manageentries', $context)) {
+        if (!has_capability('mod/scratchpad:manageentries', $context)) {
             continue;
         }
 
@@ -363,15 +363,15 @@ function journal_print_recent_activity($course, $viewfullnames, $timestart) {
         return false;
     }
 
-    echo $OUTPUT->heading(get_string('newjournalentries', 'journal').':', 3);
+    echo $OUTPUT->heading(get_string('newscratchpadentries', 'scratchpad').':', 3);
 
     foreach ($show as $submission) {
         $cm = $modinfo->get_cm($submission->cmid);
         $context = context_module::instance($submission->cmid);
-        if (has_capability('mod/journal:manageentries', $context)) {
-            $link = $CFG->wwwroot.'/mod/journal/report.php?id='.$cm->id;
+        if (has_capability('mod/scratchpad:manageentries', $context)) {
+            $link = $CFG->wwwroot.'/mod/scratchpad/report.php?id='.$cm->id;
         } else {
-            $link = $CFG->wwwroot.'/mod/journal/view.php?id='.$cm->id;
+            $link = $CFG->wwwroot.'/mod/scratchpad/view.php?id='.$cm->id;
         }
         print_recent_activity_note($submission->modified,
                                    $submission,
@@ -384,26 +384,26 @@ function journal_print_recent_activity($course, $viewfullnames, $timestart) {
 }
 
 /**
- * Returns the users with data in one journal
- * (users with records in journal_entries, students and teachers)
- * @param int $journalid Journal ID
+ * Returns the users with data in one scratchpad
+ * (users with records in scratchpad_entries, students and teachers)
+ * @param int $scratchpadid Scratchpad ID
  * @return array Array of user ids
  */
-function journal_get_participants($journalid) {
+function scratchpad_get_participants($scratchpadid) {
     global $DB;
 
     // Get students.
     $students = $DB->get_records_sql("SELECT DISTINCT u.id
                                       FROM {user} u,
-                                      {journal_entries} j
-                                      WHERE j.journal=? and
-                                      u.id = j.userid", array($journalid));
+                                      {scratchpad_entries} j
+                                      WHERE j.scratchpad=? and
+                                      u.id = j.userid", array($scratchpadid));
     // Get teachers.
     $teachers = $DB->get_records_sql("SELECT DISTINCT u.id
                                       FROM {user} u,
-                                      {journal_entries} j
-                                      WHERE j.journal=? and
-                                      u.id = j.teacher", array($journalid));
+                                      {scratchpad_entries} j
+                                      WHERE j.scratchpad=? and
+                                      u.id = j.teacher", array($scratchpadid));
 
     // Add teachers to students.
     if ($teachers) {
@@ -416,17 +416,17 @@ function journal_get_participants($journalid) {
 }
 
 /**
- * This function returns true if a scale is being used by one journal
- * @param int $journalid Journal ID
+ * This function returns true if a scale is being used by one scratchpad
+ * @param int $scratchpadid Scratchpad ID
  * @param int $scaleid Scale ID
- * @return boolean True if a scale is being used by one journal
+ * @return boolean True if a scale is being used by one scratchpad
  */
-function journal_scale_used ($journalid, $scaleid) {
+function scratchpad_scale_used ($scratchpadid, $scaleid) {
 
     global $DB;
     $return = false;
 
-    $rec = $DB->get_record("journal", array("id" => $journalid, "grade" => -$scaleid));
+    $rec = $DB->get_record("scratchpad", array("id" => $scratchpadid, "grade" => -$scaleid));
 
     if (!empty($rec) && !empty($scaleid)) {
         $return = true;
@@ -436,16 +436,16 @@ function journal_scale_used ($journalid, $scaleid) {
 }
 
 /**
- * Checks if scale is being used by any instance of journal
+ * Checks if scale is being used by any instance of scratchpad
  *
  * This is used to find out if scale used anywhere
  * @param $scaleid int
- * @return boolean True if the scale is used by any journal
+ * @return boolean True if the scale is used by any scratchpad
  */
-function journal_scale_used_anywhere($scaleid) {
+function scratchpad_scale_used_anywhere($scaleid) {
     global $DB;
 
-    if ($scaleid and $DB->get_records('journal', array('grade' => -$scaleid))) {
+    if ($scaleid and $DB->get_records('scratchpad', array('grade' => -$scaleid))) {
         return true;
     } else {
         return false;
@@ -454,13 +454,13 @@ function journal_scale_used_anywhere($scaleid) {
 
 /**
  * Implementation of the function for printing the form elements that control
- * whether the course reset functionality affects the journal.
+ * whether the course reset functionality affects the scratchpad.
  *
  * @param object $mform form passed by reference
  */
-function journal_reset_course_form_definition(&$mform) {
-    $mform->addElement('header', 'journalheader', get_string('modulenameplural', 'journal'));
-    $mform->addElement('advcheckbox', 'reset_journal', get_string('removemessages', 'journal'));
+function scratchpad_reset_course_form_definition(&$mform) {
+    $mform->addElement('header', 'scratchpadheader', get_string('modulenameplural', 'scratchpad'));
+    $mform->addElement('advcheckbox', 'reset_scratchpad', get_string('removemessages', 'scratchpad'));
 }
 
 /**
@@ -469,8 +469,8 @@ function journal_reset_course_form_definition(&$mform) {
  * @param object $course
  * @return array
  */
-function journal_reset_course_form_defaults($course) {
-    return array('reset_journal' => 1);
+function scratchpad_reset_course_form_defaults($course) {
+    return array('reset_scratchpad' => 1);
 }
 
 /**
@@ -478,33 +478,33 @@ function journal_reset_course_form_defaults($course) {
  *
  * @param object $data
  */
-function journal_reset_userdata($data) {
+function scratchpad_reset_userdata($data) {
 
     global $CFG, $DB;
 
     $status = array();
-    if (!empty($data->reset_journal)) {
+    if (!empty($data->reset_scratchpad)) {
 
         $sql = "SELECT j.id
-                FROM {journal} j
+                FROM {scratchpad} j
                 WHERE j.course = ?";
         $params = array($data->courseid);
 
-        $DB->delete_records_select('journal_entries', "journal IN ($sql)", $params);
+        $DB->delete_records_select('scratchpad_entries', "scratchpad IN ($sql)", $params);
 
-        $status[] = array('component' => get_string('modulenameplural', 'journal'),
-                          'item' => get_string('removeentries', 'journal'),
+        $status[] = array('component' => get_string('modulenameplural', 'scratchpad'),
+                          'item' => get_string('removeentries', 'scratchpad'),
                           'error' => false);
     }
 
     return $status;
 }
 
-function journal_print_overview($courses, &$htmlarray) {
+function scratchpad_print_overview($courses, &$htmlarray) {
 
     global $USER, $CFG, $DB;
 
-    if (!get_config('journal', 'overview')) {
+    if (!get_config('scratchpad', 'overview')) {
         return array();
     }
 
@@ -512,51 +512,51 @@ function journal_print_overview($courses, &$htmlarray) {
         return array();
     }
 
-    if (!$journals = get_all_instances_in_courses('journal', $courses)) {
+    if (!$scratchpads = get_all_instances_in_courses('scratchpad', $courses)) {
         return array();
     }
 
-    $strjournal = get_string('modulename', 'journal');
+    $strscratchpad = get_string('modulename', 'scratchpad');
 
     $timenow = time();
-    foreach ($journals as $journal) {
+    foreach ($scratchpads as $scratchpad) {
 
-        if (empty($courses[$journal->course]->format)) {
-            $courses[$journal->course]->format = $DB->get_field('course', 'format', array('id' => $journal->course));
+        if (empty($courses[$scratchpad->course]->format)) {
+            $courses[$scratchpad->course]->format = $DB->get_field('course', 'format', array('id' => $scratchpad->course));
         }
 
-        if ($courses[$journal->course]->format == 'weeks' AND $journal->days) {
+        if ($courses[$scratchpad->course]->format == 'weeks' AND $scratchpad->days) {
 
-            $coursestartdate = $courses[$journal->course]->startdate;
+            $coursestartdate = $courses[$scratchpad->course]->startdate;
 
-            $journal->timestart  = $coursestartdate + (($journal->section - 1) * 608400);
-            if (!empty($journal->days)) {
-                $journal->timefinish = $journal->timestart + (3600 * 24 * $journal->days);
+            $scratchpad->timestart  = $coursestartdate + (($scratchpad->section - 1) * 608400);
+            if (!empty($scratchpad->days)) {
+                $scratchpad->timefinish = $scratchpad->timestart + (3600 * 24 * $scratchpad->days);
             } else {
-                $journal->timefinish = 9999999999;
+                $scratchpad->timefinish = 9999999999;
             }
-            $journalopen = ($journal->timestart < $timenow && $timenow < $journal->timefinish);
+            $scratchpadopen = ($scratchpad->timestart < $timenow && $timenow < $scratchpad->timefinish);
 
         } else {
-            $journalopen = true;
+            $scratchpadopen = true;
         }
 
-        if ($journalopen) {
-            $str = '<div class="journal overview"><div class="name">'.
-                   $strjournal.': <a '.($journal->visible ? '' : ' class="dimmed"').
-                   ' href="'.$CFG->wwwroot.'/mod/journal/view.php?id='.$journal->coursemodule.'">'.
-                   $journal->name.'</a></div></div>';
+        if ($scratchpadopen) {
+            $str = '<div class="scratchpad overview"><div class="name">'.
+                   $strscratchpad.': <a '.($scratchpad->visible ? '' : ' class="dimmed"').
+                   ' href="'.$CFG->wwwroot.'/mod/scratchpad/view.php?id='.$scratchpad->coursemodule.'">'.
+                   $scratchpad->name.'</a></div></div>';
 
-            if (empty($htmlarray[$journal->course]['journal'])) {
-                $htmlarray[$journal->course]['journal'] = $str;
+            if (empty($htmlarray[$scratchpad->course]['scratchpad'])) {
+                $htmlarray[$scratchpad->course]['scratchpad'] = $str;
             } else {
-                $htmlarray[$journal->course]['journal'] .= $str;
+                $htmlarray[$scratchpad->course]['scratchpad'] .= $str;
             }
         }
     }
 }
 
-function journal_get_user_grades($journal, $userid=0) {
+function scratchpad_get_user_grades($scratchpad, $userid=0) {
     global $DB;
 
     $params = array();
@@ -568,16 +568,16 @@ function journal_get_user_grades($journal, $userid=0) {
         $userstr = '';
     }
 
-    if (!$journal) {
+    if (!$scratchpad) {
         return false;
 
     } else {
 
         $sql = "SELECT userid, modified as datesubmitted, format as feedbackformat,
                 rating as rawgrade, entrycomment as feedback, teacher as usermodifier, timemarked as dategraded
-                FROM {journal_entries}
-                WHERE journal = :jid ".$userstr;
-        $params['jid'] = $journal->id;
+                FROM {scratchpad_entries}
+                WHERE scratchpad = :jid ".$userstr;
+        $params['jid'] = $scratchpad->id;
 
         $grades = $DB->get_records_sql($sql, $params);
 
@@ -599,13 +599,13 @@ function journal_get_user_grades($journal, $userid=0) {
 
 
 /**
- * Update journal grades in 1.9 gradebook
+ * Update scratchpad grades in 1.9 gradebook
  *
- * @param object   $journal      if is null, all journals
+ * @param object   $scratchpad      if is null, all scratchpads
  * @param int      $userid       if is false al users
  * @param boolean  $nullifnone   return null if grade does not exist
  */
-function journal_update_grades($journal=null, $userid=0, $nullifnone=true) {
+function scratchpad_update_grades($scratchpad=null, $userid=0, $nullifnone=true) {
 
     global $CFG, $DB;
 
@@ -613,29 +613,29 @@ function journal_update_grades($journal=null, $userid=0, $nullifnone=true) {
         require_once($CFG->libdir.'/gradelib.php');
     }
 
-    if ($journal != null) {
-        if ($grades = journal_get_user_grades($journal, $userid)) {
-            journal_grade_item_update($journal, $grades);
+    if ($scratchpad != null) {
+        if ($grades = scratchpad_get_user_grades($scratchpad, $userid)) {
+            scratchpad_grade_item_update($scratchpad, $grades);
         } else if ($userid && $nullifnone) {
             $grade = new stdClass();
             $grade->userid   = $userid;
             $grade->rawgrade = null;
-            journal_grade_item_update($journal, $grade);
+            scratchpad_grade_item_update($scratchpad, $grade);
         } else {
-            journal_grade_item_update($journal);
+            scratchpad_grade_item_update($scratchpad);
         }
     } else {
         $sql = "SELECT j.*, cm.idnumber as cmidnumber
                 FROM {course_modules} cm
                 JOIN {modules} m ON m.id = cm.module
-                JOIN {journal} j ON cm.instance = j.id
-                WHERE m.name = 'journal'";
+                JOIN {scratchpad} j ON cm.instance = j.id
+                WHERE m.name = 'scratchpad'";
         if ($recordset = $DB->get_records_sql($sql)) {
-            foreach ($recordset as $journal) {
-                if ($journal->grade != false) {
-                    journal_update_grades($journal);
+            foreach ($recordset as $scratchpad) {
+                if ($scratchpad->grade != false) {
+                    scratchpad_update_grades($scratchpad);
                 } else {
-                    journal_grade_item_update($journal);
+                    scratchpad_grade_item_update($scratchpad);
                 }
             }
         }
@@ -644,33 +644,33 @@ function journal_update_grades($journal=null, $userid=0, $nullifnone=true) {
 
 
 /**
- * Create grade item for given journal
+ * Create grade item for given scratchpad
  *
- * @param object $journal object with extra cmidnumber
+ * @param object $scratchpad object with extra cmidnumber
  * @param mixed optional array/object of grade(s); 'reset' means reset grades in gradebook
  * @return int 0 if ok, error code otherwise
  */
-function journal_grade_item_update($journal, $grades=null) {
+function scratchpad_grade_item_update($scratchpad, $grades=null) {
     global $CFG;
     if (!function_exists('grade_update')) { // Workaround for buggy PHP versions.
         require_once($CFG->libdir.'/gradelib.php');
     }
 
-    if (property_exists($journal, 'cmidnumber')) {
-        $params = array('itemname' => $journal->name, 'idnumber' => $journal->cmidnumber);
+    if (property_exists($scratchpad, 'cmidnumber')) {
+        $params = array('itemname' => $scratchpad->name, 'idnumber' => $scratchpad->cmidnumber);
     } else {
-        $params = array('itemname' => $journal->name);
+        $params = array('itemname' => $scratchpad->name);
     }
 
-    if ($journal->grade > 0) {
+    if ($scratchpad->grade > 0) {
         $params['gradetype']  = GRADE_TYPE_VALUE;
-        $params['grademax']   = $journal->grade;
+        $params['grademax']   = $scratchpad->grade;
         $params['grademin']   = 0;
         $params['multfactor'] = 1.0;
 
-    } else if ($journal->grade < 0) {
+    } else if ($scratchpad->grade < 0) {
         $params['gradetype'] = GRADE_TYPE_SCALE;
-        $params['scaleid']   = -$journal->grade;
+        $params['scaleid']   = -$scratchpad->grade;
 
     } else {
         $params['gradetype']  = GRADE_TYPE_NONE;
@@ -682,32 +682,32 @@ function journal_grade_item_update($journal, $grades=null) {
         $grades = null;
     }
 
-    return grade_update('mod/journal', $journal->course, 'mod', 'journal', $journal->id, 0, $grades, $params);
+    return grade_update('mod/scratchpad', $scratchpad->course, 'mod', 'scratchpad', $scratchpad->id, 0, $grades, $params);
 }
 
 
 /**
- * Delete grade item for given journal
+ * Delete grade item for given scratchpad
  *
- * @param   object   $journal
+ * @param   object   $scratchpad
  * @return  object   grade_item
  */
-function journal_grade_item_delete($journal) {
+function scratchpad_grade_item_delete($scratchpad) {
     global $CFG;
 
     require_once($CFG->libdir.'/gradelib.php');
 
-    return grade_update('mod/journal', $journal->course, 'mod', 'journal', $journal->id, 0, null, array('deleted' => 1));
+    return grade_update('mod/scratchpad', $scratchpad->course, 'mod', 'scratchpad', $scratchpad->id, 0, null, array('deleted' => 1));
 }
 
 
 
-function journal_get_users_done($journal, $currentgroup) {
+function scratchpad_get_users_done($scratchpad, $currentgroup) {
     global $DB;
 
     $params = array();
 
-    $sql = "SELECT u.* FROM {journal_entries} j
+    $sql = "SELECT u.* FROM {scratchpad_entries} j
             JOIN {user} u ON j.userid = u.id ";
 
     // Group users.
@@ -716,118 +716,118 @@ function journal_get_users_done($journal, $currentgroup) {
         $params[] = $currentgroup;
     }
 
-    $sql .= " WHERE j.journal=? ORDER BY j.modified DESC";
-    $params[] = $journal->id;
-    $journals = $DB->get_records_sql($sql, $params);
+    $sql .= " WHERE j.scratchpad=? ORDER BY j.modified DESC";
+    $params[] = $scratchpad->id;
+    $scratchpads = $DB->get_records_sql($sql, $params);
 
-    $cm = journal_get_coursemodule($journal->id);
-    if (!$journals || !$cm) {
+    $cm = scratchpad_get_coursemodule($scratchpad->id);
+    if (!$scratchpads || !$cm) {
         return null;
     }
 
     // Remove unenrolled participants.
-    foreach ($journals as $key => $user) {
+    foreach ($scratchpads as $key => $user) {
 
         $context = context_module::instance($cm->id);
 
-        $canadd = has_capability('mod/journal:addentries', $context, $user);
-        $entriesmanager = has_capability('mod/journal:manageentries', $context, $user);
+        $canadd = has_capability('mod/scratchpad:addentries', $context, $user);
+        $entriesmanager = has_capability('mod/scratchpad:manageentries', $context, $user);
 
         if (!$entriesmanager and !$canadd) {
-            unset($journals[$key]);
+            unset($scratchpads[$key]);
         }
     }
 
-    return $journals;
+    return $scratchpads;
 }
 
 /**
- * Counts all the journal entries (optionally in a given group)
+ * Counts all the scratchpad entries (optionally in a given group)
  */
-function journal_count_entries($journal, $groupid = 0) {
+function scratchpad_count_entries($scratchpad, $groupid = 0) {
     global $DB;
 
-    $cm = journal_get_coursemodule($journal->id);
+    $cm = scratchpad_get_coursemodule($scratchpad->id);
     $context = context_module::instance($cm->id);
 
     if ($groupid) {     // How many in a particular group?
 
-        $sql = "SELECT DISTINCT u.id FROM {journal_entries} j
+        $sql = "SELECT DISTINCT u.id FROM {scratchpad_entries} j
                 JOIN {groups_members} g ON g.userid = j.userid
                 JOIN {user} u ON u.id = g.userid
-                WHERE j.journal = ? AND g.groupid = ?";
-        $journals = $DB->get_records_sql($sql, array($journal->id, $groupid));
+                WHERE j.scratchpad = ? AND g.groupid = ?";
+        $scratchpads = $DB->get_records_sql($sql, array($scratchpad->id, $groupid));
 
     } else { // Count all the entries from the whole course.
 
-        $sql = "SELECT DISTINCT u.id FROM {journal_entries} j
+        $sql = "SELECT DISTINCT u.id FROM {scratchpad_entries} j
                 JOIN {user} u ON u.id = j.userid
-                WHERE j.journal = ?";
-        $journals = $DB->get_records_sql($sql, array($journal->id));
+                WHERE j.scratchpad = ?";
+        $scratchpads = $DB->get_records_sql($sql, array($scratchpad->id));
     }
 
-    if (!$journals) {
+    if (!$scratchpads) {
         return 0;
     }
 
-    $canadd = get_users_by_capability($context, 'mod/journal:addentries', 'u.id');
-    $entriesmanager = get_users_by_capability($context, 'mod/journal:manageentries', 'u.id');
+    $canadd = get_users_by_capability($context, 'mod/scratchpad:addentries', 'u.id');
+    $entriesmanager = get_users_by_capability($context, 'mod/scratchpad:manageentries', 'u.id');
 
     // Remove unenrolled participants.
-    foreach ($journals as $userid => $notused) {
+    foreach ($scratchpads as $userid => $notused) {
 
         if (!isset($entriesmanager[$userid]) && !isset($canadd[$userid])) {
-            unset($journals[$userid]);
+            unset($scratchpads[$userid]);
         }
     }
 
-    return count($journals);
+    return count($scratchpads);
 }
 
-function journal_get_unmailed_graded($cutofftime) {
+function scratchpad_get_unmailed_graded($cutofftime) {
     global $DB;
 
-    $sql = "SELECT je.*, j.course, j.name FROM {journal_entries} je
-            JOIN {journal} j ON je.journal = j.id
+    $sql = "SELECT je.*, j.course, j.name FROM {scratchpad_entries} je
+            JOIN {scratchpad} j ON je.scratchpad = j.id
             WHERE je.mailed = '0' AND je.timemarked < ? AND je.timemarked > 0";
     return $DB->get_records_sql($sql, array($cutofftime));
 }
 
-function journal_log_info($log) {
+function scratchpad_log_info($log) {
     global $DB;
 
     $sql = "SELECT j.*, u.firstname, u.lastname
-            FROM {journal} j
-            JOIN {journal_entries} je ON je.journal = j.id
+            FROM {scratchpad} j
+            JOIN {scratchpad_entries} je ON je.scratchpad = j.id
             JOIN {user} u ON u.id = je.userid
             WHERE je.id = ?";
     return $DB->get_record_sql($sql, array($log->info));
 }
 
 /**
- * Returns the journal instance course_module id
+ * Returns the scratchpad instance course_module id
  *
- * @param integer $journal
+ * @param integer $scratchpad
  * @return object
  */
-function journal_get_coursemodule($journalid) {
+function scratchpad_get_coursemodule($scratchpadid) {
 
     global $DB;
 
     return $DB->get_record_sql("SELECT cm.id FROM {course_modules} cm
                                 JOIN {modules} m ON m.id = cm.module
-                                WHERE cm.instance = ? AND m.name = 'journal'", array($journalid));
+                                WHERE cm.instance = ? AND m.name = 'scratchpad'", array($scratchpadid));
 }
 
 
 
-function journal_print_user_entry($course, $user, $entry, $teachers, $grades) {
+function scratchpad_print_user_entry($course, $user, $entry, $teachers, $grades) {
 
     global $USER, $OUTPUT, $DB, $CFG;
 
     require_once($CFG->dirroot.'/lib/gradelib.php');
 
-    echo "\n<table class=\"journaluserentry m-b-1\" id=\"entry-" . $user->id . "\">";
+    echo "\n<table class=\"scratchpaduserentry m-b-1\" id=\"entry-" . $user->id . "\">";
 
     echo "\n<tr>";
     echo "\n<td class=\"userpix\" rowspan=\"2\">";
@@ -842,9 +842,9 @@ function journal_print_user_entry($course, $user, $entry, $teachers, $grades) {
 
     echo "\n<tr><td>";
     if ($entry) {
-        echo journal_format_entry_text($entry, $course);
+        echo scratchpad_format_entry_text($entry, $course);
     } else {
-        print_string("noentry", "journal");
+        print_string("noentry", "scratchpad");
     }
     echo "</td></tr>";
 
@@ -867,8 +867,8 @@ function journal_print_user_entry($course, $user, $entry, $teachers, $grades) {
         $feedbackdisabledstr = '';
         $feedbacktext = $entry->entrycomment;
 
-        // If the grade was modified from the gradebook disable edition also skip if journal is not graded.
-        $gradinginfo = grade_get_grades($course->id, 'mod', 'journal', $entry->journal, array($user->id));
+        // If the grade was modified from the gradebook disable edition also skip if scratchpad is not graded.
+        $gradinginfo = grade_get_grades($course->id, 'mod', 'scratchpad', $entry->scratchpad, array($user->id));
         if (!empty($gradinginfo->items[0]->grades[$entry->userid]->str_long_grade)) {
             if ($gradingdisabled = $gradinginfo->items[0]->grades[$user->id]->locked
                     || $gradinginfo->items[0]->grades[$user->id]->overridden) {
@@ -876,7 +876,7 @@ function journal_print_user_entry($course, $user, $entry, $teachers, $grades) {
                 $hiddengradestr = '<input type="hidden" name="r'.$entry->id.'" value="'.$entry->rating.'"/>';
                 $gradebooklink = '<a href="'.$CFG->wwwroot.'/grade/report/grader/index.php?id='.$course->id.'">';
                 $gradebooklink .= $gradinginfo->items[0]->grades[$user->id]->str_long_grade.'</a>';
-                $gradebookgradestr = '<br/>'.get_string("gradeingradebook", "journal").':&nbsp;'.$gradebooklink;
+                $gradebookgradestr = '<br/>'.get_string("gradeingradebook", "scratchpad").':&nbsp;'.$gradebooklink;
 
                 $feedbackdisabledstr = 'disabled="disabled"';
                 $feedbacktext = $gradinginfo->items[0]->grades[$user->id]->str_feedback;
@@ -890,7 +890,7 @@ function journal_print_user_entry($course, $user, $entry, $teachers, $grades) {
         echo $hiddengradestr;
         // Rewrote next three lines to show entry needs to be regraded due to resubmission.
         if (!empty($entry->timemarked) && $entry->modified > $entry->timemarked) {
-            echo " <span class=\"lastedit\">".get_string("needsregrade", "journal"). "</span>";
+            echo " <span class=\"lastedit\">".get_string("needsregrade", "scratchpad"). "</span>";
         } else if ($entry->timemarked) {
             echo " <span class=\"lastedit\">".userdate($entry->timemarked)."</span>";
         }
@@ -911,14 +911,14 @@ function journal_print_user_entry($course, $user, $entry, $teachers, $grades) {
 
 }
 
-function journal_print_feedback($course, $entry, $grades) {
+function scratchpad_print_feedback($course, $entry, $grades) {
 
     global $CFG, $DB, $OUTPUT;
 
     require_once($CFG->dirroot.'/lib/gradelib.php');
 
     if (! $teacher = $DB->get_record('user', array('id' => $entry->teacher))) {
-        print_error('Weird journal error');
+        print_error('Weird scratchpad error');
     }
 
     echo '<table class="feedbackbox">';
@@ -940,7 +940,7 @@ function journal_print_feedback($course, $entry, $grades) {
     echo '<div class="grade">';
 
     // Gradebook preference.
-    $gradinginfo = grade_get_grades($course->id, 'mod', 'journal', $entry->journal, array($entry->userid));
+    $gradinginfo = grade_get_grades($course->id, 'mod', 'scratchpad', $entry->scratchpad, array($entry->userid));
     if (!empty($gradinginfo->items[0]->grades[$entry->userid]->str_long_grade)) {
         echo get_string('grade').': ';
         echo $gradinginfo->items[0]->grades[$entry->userid]->str_long_grade;
@@ -955,9 +955,9 @@ function journal_print_feedback($course, $entry, $grades) {
 }
 
 /**
- * Serves the journal files.
+ * Serves the scratchpad files.
  *
- * @package  mod_journal
+ * @package  mod_scratchpad
  * @category files
  * @param stdClass $course course object
  * @param stdClass $cm course module object
@@ -968,7 +968,7 @@ function journal_print_feedback($course, $entry, $grades) {
  * @param array $options additional options affecting the file serving
  * @return bool false if file not found, does not return if found - just send the file
  */
-function journal_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {
+function scratchpad_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {
     global $DB, $USER;
 
     if ($context->contextlevel != CONTEXT_MODULE) {
@@ -983,10 +983,10 @@ function journal_pluginfile($course, $cm, $context, $filearea, $args, $forcedown
 
     // Args[0] should be the entry id.
     $entryid = intval(array_shift($args));
-    $entry = $DB->get_record('journal_entries', array('id' => $entryid), 'id, userid', MUST_EXIST);
+    $entry = $DB->get_record('scratchpad_entries', array('id' => $entryid), 'id, userid', MUST_EXIST);
 
-    $canmanage = has_capability('mod/journal:manageentries', $context);
-    if (!$canmanage && !has_capability('mod/journal:addentries', $context)) {
+    $canmanage = has_capability('mod/scratchpad:manageentries', $context);
+    if (!$canmanage && !has_capability('mod/scratchpad:addentries', $context)) {
         // Even if it is your own entry.
         return false;
     }
@@ -1002,14 +1002,14 @@ function journal_pluginfile($course, $cm, $context, $filearea, $args, $forcedown
 
     $fs = get_file_storage();
     $relativepath = implode('/', $args);
-    $fullpath = "/$context->id/mod_journal/$filearea/$entryid/$relativepath";
+    $fullpath = "/$context->id/mod_scratchpad/$filearea/$entryid/$relativepath";
     $file = $fs->get_file_by_hash(sha1($fullpath));
 
     // Finally send the file.
     send_stored_file($file, null, 0, $forcedownload, $options);
 }
 
-function journal_format_entry_text($entry, $course = false, $cm = false) {
+function scratchpad_format_entry_text($entry, $course = false, $cm = false) {
 
     if (!$cm) {
         if ($course) {
@@ -1017,11 +1017,11 @@ function journal_format_entry_text($entry, $course = false, $cm = false) {
         } else {
             $courseid = 0;
         }
-        $cm = get_coursemodule_from_instance('journal', $entry->journal, $courseid);
+        $cm = get_coursemodule_from_instance('scratchpad', $entry->scratchpad, $courseid);
     }
 
     $context = context_module::instance($cm->id);
-    $entrytext = file_rewrite_pluginfile_urls($entry->text, 'pluginfile.php', $context->id, 'mod_journal', 'entry', $entry->id);
+    $entrytext = file_rewrite_pluginfile_urls($entry->text, 'pluginfile.php', $context->id, 'mod_scratchpad', 'entry', $entry->id);
 
     $formatoptions = array(
         'context' => $context,

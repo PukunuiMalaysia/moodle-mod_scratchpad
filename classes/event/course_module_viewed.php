@@ -15,21 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The mod_journal course module viewed event.
+ * The mod_scratchpad course module viewed event.
  *
- * @package    mod_journal
+ * @package    mod_scratchpad
  * @copyright  2014 drachels@drachels.com
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_journal\event;
+namespace mod_scratchpad\event;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The mod_journal course module viewed event class.
+ * The mod_scratchpad course module viewed event class.
  *
- * @package    mod_journal
+ * @package    mod_scratchpad
  * @since      Moodle 2.7
  * @copyright  2014 drachels@drachels.com
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -44,7 +44,7 @@ class course_module_viewed extends \core\event\course_module_viewed {
     protected function init() {
         $this->data['crud'] = 'r';
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
-        $this->data['objecttable'] = 'journal';
+        $this->data['objecttable'] = 'scratchpad';
     }
 
     /**
@@ -53,7 +53,7 @@ class course_module_viewed extends \core\event\course_module_viewed {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/journal/view.php', array('id' => $this->contextinstanceid));
+        return new \moodle_url('/mod/scratchpad/view.php', array('id' => $this->contextinstanceid));
     }
 
     /**
@@ -63,6 +63,6 @@ class course_module_viewed extends \core\event\course_module_viewed {
      */
     protected function get_legacy_logdata() {
         $url = new \moodle_url('view.php', array('id' => $this->contextinstanceid));
-        return array($this->courseid, 'journal', 'view', $url->out(), $this->objectid, $this->contextinstanceid);
+        return array($this->courseid, 'scratchpad', 'view', $url->out(), $this->objectid, $this->contextinstanceid);
     }
 }

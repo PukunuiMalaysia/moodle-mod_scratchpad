@@ -18,7 +18,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $capabilities = array(
 
-    'mod/journal:manageentries' => array(
+    'mod/scratchpad:manageentries' => array(
 
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
@@ -29,7 +29,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/journal:addentries' => array(
+    'mod/scratchpad:addentries' => array(
 
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
@@ -40,7 +40,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/journal:addinstance' => array(
+    'mod/scratchpad:addinstance' => array(
         'riskbitmask' => RISK_XSS,
 
         'captype' => 'write',

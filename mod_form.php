@@ -18,7 +18,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/course/moodleform_mod.php');
 
-class mod_journal_mod_form extends moodleform_mod {
+class mod_scratchpad_mod_form extends moodleform_mod {
 
     public function definition() {
         global $COURSE;
@@ -27,14 +27,14 @@ class mod_journal_mod_form extends moodleform_mod {
 
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
-        $mform->addElement('text', 'name', get_string('journalname', 'journal'), array('size' => '64'));
+        $mform->addElement('text', 'name', get_string('scratchpadname', 'scratchpad'), array('size' => '64'));
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
 
-        $this->standard_intro_elements(get_string('journalquestion', 'journal'));
+        $this->standard_intro_elements(get_string('scratchpadquestion', 'scratchpad'));
 
         $options = array();
-        $options[0] = get_string('alwaysopen', 'journal');
+        $options[0] = get_string('alwaysopen', 'scratchpad');
         for ($i = 1; $i <= 13; $i++) {
             $options[$i] = get_string('numdays', '', $i);
         }
@@ -43,7 +43,7 @@ class mod_journal_mod_form extends moodleform_mod {
             $options[$days] = get_string('numweeks', '', $i);
         }
         $options[365] = get_string('numweeks', '', 52);
-        $mform->addElement('select', 'days', get_string('daysavailable', 'journal'), $options);
+        $mform->addElement('select', 'days', get_string('daysavailable', 'scratchpad'), $options);
         if ($COURSE->format == 'weeks') {
             $mform->setDefault('days', '7');
         } else {

@@ -1,4 +1,4 @@
-@mod @mod_journal
+@mod @mod_scratchpad
 Feature: Teacher can view, comment and grade students entries
   In order to interact with students to refine an answer
   As a teacher
@@ -21,20 +21,20 @@ Feature: Teacher can view, comment and grade students entries
       | student2 | C1 | student |
     And the following "activities" exist:
       | activity | name               | intro            | course | idnumber |
-      | journal  | Test journal name  | Journal question | C1     | journal1 |
+      | scratchpad  | Test scratchpad name  | Scratchpad question | C1     | scratchpad1 |
     And I log in as "student1"
     And I am on "Course1" course homepage
-    And I follow "Test journal name"
-    And I press "Start or edit my journal entry"
+    And I follow "Test scratchpad name"
+    And I press "Start or edit my scratchpad entry"
     And I set the following fields to these values:
       | Entry | Student 1 first reply |
     And I press "Save changes"
     And I log out
     And I log in as "student2"
     And I am on "Course1" course homepage
-    And I follow "Test journal name"
-    And I should see "Journal question"
-    And I press "Start or edit my journal entry"
+    And I follow "Test scratchpad name"
+    And I should see "Scratchpad question"
+    And I press "Start or edit my scratchpad entry"
     And I set the following fields to these values:
       | Entry | Student 2 first reply |
     And I press "Save changes"
@@ -42,21 +42,21 @@ Feature: Teacher can view, comment and grade students entries
     And I log in as "teacher1"
     And I am on "Course1" course homepage
 
-  Scenario: Teacher can access students entries from the journals list page
+  Scenario: Teacher can access students entries from the scratchpads list page
     When I follow "Course1"
     And I turn editing mode on
     And I add the "Activities" block
-    And I click on "Journals" "link" in the "Activities" "block"
-    Then I should see "Journal question" in the "Test journal name" "table_row"
-    And I should see "View 2 journal entries" in the "Test journal name" "table_row"
-    And I follow "View 2 journal entries"
+    And I click on "Scratchpads" "link" in the "Activities" "block"
+    Then I should see "Scratchpad question" in the "Test scratchpad name" "table_row"
+    And I should see "View 2 scratchpad entries" in the "Test scratchpad name" "table_row"
+    And I follow "View 2 scratchpad entries"
 
   Scenario: Teacher grades and adds/edits feedback to student's entries
-    When I follow "Test journal name"
-    And I should see "Journal question"
-    And I follow "View 2 journal entries"
-    Then I should see "Student 1 first reply" in the "//table[@class='journaluserentry m-b-1']/descendant::td[@class='userfullname'][contains(., 'Student 1')]/ancestor::table[@class='journaluserentry m-b-1']" "xpath_element"
-    And I should see "Student 2 first reply" in the "//table[@class='journaluserentry m-b-1']/descendant::td[@class='userfullname'][contains(., 'Student 2')]/ancestor::table[@class='journaluserentry m-b-1']" "xpath_element"
+    When I follow "Test scratchpad name"
+    And I should see "Scratchpad question"
+    And I follow "View 2 scratchpad entries"
+    Then I should see "Student 1 first reply" in the "//table[@class='scratchpaduserentry m-b-1']/descendant::td[@class='userfullname'][contains(., 'Student 1')]/ancestor::table[@class='scratchpaduserentry m-b-1']" "xpath_element"
+    And I should see "Student 2 first reply" in the "//table[@class='scratchpaduserentry m-b-1']/descendant::td[@class='userfullname'][contains(., 'Student 2')]/ancestor::table[@class='scratchpaduserentry m-b-1']" "xpath_element"
     And I should not see "Entry has changed since last feedback was saved."
     And I set the field "Student 2 Grade" to "94"
     And I set the field "Student 2 Feedback" to "Well done macho man"
@@ -79,8 +79,8 @@ Feature: Teacher can view, comment and grade students entries
     And I log out
     And I log in as "student1"
     And I am on "Course1" course homepage
-    And I follow "Test journal name"
-    And I press "Start or edit my journal entry"
+    And I follow "Test scratchpad name"
+    And I press "Start or edit my scratchpad entry"
     And I set the following fields to these values:
       | Entry | Student 1 edited first reply |
     And I press "Save changes"
@@ -88,9 +88,9 @@ Feature: Teacher can view, comment and grade students entries
     And I log out
     And I log in as "teacher1"
     And I am on "Course1" course homepage
-    And I follow "Test journal name"
-    And I follow "View 2 journal entries"
-    And I should see "Entry has changed since last feedback was saved" in the "//table[@class='journaluserentry m-b-1'][contains(., 'Student 1')]" "xpath_element"
-    And I should see "Student 1 edited first reply" in the "//table[@class='journaluserentry m-b-1'][contains(., 'Student 1')]" "xpath_element"
-    And I should not see "Entry has changed since last feedback was saved" in the "//table[@class='journaluserentry m-b-1'][contains(., 'Student 2')]" "xpath_element"
-    And I should see "Student 2 first reply" in the "//table[@class='journaluserentry m-b-1'][contains(., 'Student 2')]" "xpath_element"
+    And I follow "Test scratchpad name"
+    And I follow "View 2 scratchpad entries"
+    And I should see "Entry has changed since last feedback was saved" in the "//table[@class='scratchpaduserentry m-b-1'][contains(., 'Student 1')]" "xpath_element"
+    And I should see "Student 1 edited first reply" in the "//table[@class='scratchpaduserentry m-b-1'][contains(., 'Student 1')]" "xpath_element"
+    And I should not see "Entry has changed since last feedback was saved" in the "//table[@class='scratchpaduserentry m-b-1'][contains(., 'Student 2')]" "xpath_element"
+    And I should see "Student 2 first reply" in the "//table[@class='scratchpaduserentry m-b-1'][contains(., 'Student 2')]" "xpath_element"

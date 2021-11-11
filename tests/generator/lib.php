@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * mod_journal data generator.
+ * mod_scratchpad data generator.
  *
- * @package    mod_journal
+ * @package    mod_scratchpad
  * @category   test
  * @copyright  2014 David Monllao <david.monllao@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -26,19 +26,19 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * mod_journal data generator class.
+ * mod_scratchpad data generator class.
  *
- * @package    mod_journal
+ * @package    mod_scratchpad
  * @category   test
  * @copyright  2014 David Monllao <david.monllao@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_journal_generator extends testing_module_generator {
+class mod_scratchpad_generator extends testing_module_generator {
 
     /**
-     * @var int keep track of how many journals have been created.
+     * @var int keep track of how many scratchpads have been created.
      */
-    protected $journalcount = 0;
+    protected $scratchpadcount = 0;
 
     /**
      * To be called from data reset code only,
@@ -46,7 +46,7 @@ class mod_journal_generator extends testing_module_generator {
      * @return void
      */
     public function reset() {
-        $this->journalcount = 0;
+        $this->scratchpadcount = 0;
         parent::reset();
     }
 
@@ -55,10 +55,10 @@ class mod_journal_generator extends testing_module_generator {
         $record = (object)(array)$record;
 
         if (!isset($record->name)) {
-            $record->name = 'Test journal name ' . $this->journalcount;
+            $record->name = 'Test scratchpad name ' . $this->scratchpadcount;
         }
         if (!isset($record->intro)) {
-            $record->intro = 'Test journal name ' . $this->journalcount;
+            $record->intro = 'Test scratchpad name ' . $this->scratchpadcount;
         }
         if (!isset($record->days)) {
             $record->days = 0;
@@ -67,7 +67,7 @@ class mod_journal_generator extends testing_module_generator {
             $record->grade = 100;
         }
 
-        $this->journalcount++;
+        $this->scratchpadcount++;
 
         return parent::create_instance($record, (array)$options);
     }

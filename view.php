@@ -20,7 +20,7 @@ require_once("lib.php");
 
 $id = required_param('id', PARAM_INT);    // Course Module ID.
 
-if (! $cm = get_coursemodule_from_id('journal', $id)) {
+if (! $cm = get_coursemodule_from_id('scratchpad', $id)) {
     print_error("Course Module ID was incorrect");
 }
 
@@ -35,14 +35,14 @@ require_login($course, true, $cm);
 $completion = new completion_info($course);
 $completion->set_module_viewed($cm);
 
-$entriesmanager = has_capability('mod/journal:manageentries', $context);
-$canadd = has_capability('mod/journal:addentries', $context);
+$entriesmanager = has_capability('mod/scratchpad:manageentries', $context);
+$canadd = has_capability('mod/scratchpad:addentries', $context);
 
 if (!$entriesmanager && !$canadd) {
-    print_error('accessdenied', 'journal');
+    print_error('accessdenied', 'scratchpad');
 }
 
-if (! $journal = $DB->get_record("journal", array("id" => $cm->instance))) {
+if (! $scratchpad = $DB->get_record("scratchpad", array("id" => $cm->instance))) {
     print_error("Course module is incorrect");
 }
 
@@ -50,49 +50,49 @@ if (! $cw = $DB->get_record("course_sections", array("id" => $cm->section))) {
     print_error("Course module is incorrect");
 }
 
-$journalname = format_string($journal->name, true, array('context' => $context));
+$scratchpadname = format_string($scratchpad->name, true, array('context' => $context));
 
 // Header.
-$PAGE->set_url('/mod/journal/view.php', array('id' => $id));
-$PAGE->navbar->add($journalname);
-$PAGE->set_title($journalname);
+$PAGE->set_url('/mod/scratchpad/view.php', array('id' => $id));
+$PAGE->navbar->add($scratchpadname);
+$PAGE->set_title($scratchpadname);
 $PAGE->set_heading($course->fullname);
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading($journalname);
+echo $OUTPUT->heading($scratchpadname);
 
 // Check to see if groups are being used here.
 $groupmode = groups_get_activity_groupmode($cm);
 $currentgroup = groups_get_activity_group($cm, true);
-groups_print_activity_menu($cm, $CFG->wwwroot . "/mod/journal/view.php?id=$cm->id");
+groups_print_activity_menu($cm, $CFG->wwwroot . "/mod/scratchpad/view.php?id=$cm->id");
 
 if ($entriesmanager) {
-    $entrycount = journal_count_entries($journal, $currentgroup);
+    $entrycount = scratchpad_count_entries($scratchpad, $currentgroup);
     echo '<div class="reportlink"><a href="report.php?id='.$cm->id.'">'.
-          get_string('viewallentries', 'journal', $entrycount).'</a></div>';
+          get_string('viewallentries', 'scratchpad', $entrycount).'</a></div>';
 }
 
-$journal->intro = trim($journal->intro);
-if (!empty($journal->intro)) {
-    $intro = format_module_intro('journal', $journal, $cm->id);
+$scratchpad->intro = trim($scratchpad->intro);
+if (!empty($scratchpad->intro)) {
+    $intro = format_module_intro('scratchpad', $scratchpad, $cm->id);
     echo $OUTPUT->box($intro, 'generalbox', 'intro');
 }
 
 echo '<br />';
 
 $timenow = time();
-if ($course->format == 'weeks' and $journal->days) {
+if ($course->format == 'weeks' and $scratchpad->days) {
     $timestart = $course->startdate + (($cw->section - 1) * 604800);
-    if ($journal->days) {
-        $timefinish = $timestart + (3600 * 24 * $journal->days);
+    if ($scratchpad->days) {
+        $timefinish = $timestart + (3600 * 24 * $scratchpad->days);
     } else {
         $timefinish = $course->enddate;
     }
-} else {  // Have no time limits on the journals.
+} else {  // Have no time limits on the scratchpads.
 
     $timestart = $timenow - 1;
     $timefinish = $timenow + 1;
-    $journal->days = 0;
+    $scratchpad->days = 0;
 }
 if ($timenow > $timestart) {
 
@@ -102,20 +102,20 @@ if ($timenow > $timestart) {
     if ($timenow < $timefinish) {
 
         if ($canadd) {
-            echo $OUTPUT->single_button('edit.php?id='.$cm->id, get_string('startoredit', 'journal'), 'get',
-                array("class" => "singlebutton journalstart"));
+            echo $OUTPUT->single_button('edit.php?id='.$cm->id, get_string('startoredit', 'scratchpad'), 'get',
+                array("class" => "singlebutton scratchpadstart"));
         }
     }
 
     // Display entry.
-    if ($entry = $DB->get_record('journal_entries', array('userid' => $USER->id, 'journal' => $journal->id))) {
+    if ($entry = $DB->get_record('scratchpad_entries', array('userid' => $USER->id, 'scratchpad' => $scratchpad->id))) {
         if (empty($entry->text)) {
-            echo '<p align="center"><b>'.get_string('blankentry', 'journal').'</b></p>';
+            echo '<p align="center"><b>'.get_string('blankentry', 'scratchpad').'</b></p>';
         } else {
-            echo journal_format_entry_text($entry, $course, $cm);
+            echo scratchpad_format_entry_text($entry, $course, $cm);
         }
     } else {
-        echo '<span class="warning">'.get_string('notstarted', 'journal').'</span>';
+        echo '<br><span class="warning">'.get_string('notstarted', 'scratchpad').'</span>';
     }
 
     echo $OUTPUT->box_end();
@@ -130,40 +130,40 @@ if ($timenow > $timestart) {
         }
         // Added three lines to mark entry as being dirty and needing regrade.
         if (!empty($entry->modified) AND !empty($entry->timemarked) AND $entry->modified > $entry->timemarked) {
-            echo "<div class=\"lastedit\">".get_string("needsregrade", "journal"). "</div>";
+            echo "<div class=\"lastedit\">".get_string("needsregrade", "scratchpad"). "</div>";
         }
 
-        if (!empty($journal->days)) {
-            echo '<div class="editend"><strong>'.get_string('editingends', 'journal').': </strong> ';
+        if (!empty($scratchpad->days)) {
+            echo '<div class="editend"><strong>'.get_string('editingends', 'scratchpad').': </strong> ';
             echo userdate($timefinish).'</div>';
         }
 
     } else {
-        echo '<div class="editend"><strong>'.get_string('editingended', 'journal').': </strong> ';
+        echo '<div class="editend"><strong>'.get_string('editingended', 'scratchpad').': </strong> ';
         echo userdate($timefinish).'</div>';
     }
 
     // Feedback.
     if (!empty($entry->entrycomment) or !empty($entry->rating)) {
-        $grades = make_grades_menu($journal->grade);
+        $grades = make_grades_menu($scratchpad->grade);
         echo $OUTPUT->heading(get_string('feedback'));
-        journal_print_feedback($course, $entry, $grades);
+        scratchpad_print_feedback($course, $entry, $grades);
     }
 
 } else {
-    echo '<div class="warning">'.get_string('notopenuntil', 'journal').': ';
+    echo '<div class="warning">'.get_string('notopenuntil', 'scratchpad').': ';
     echo userdate($timestart).'</div>';
 }
 
 
 // Trigger module viewed event.
-$event = \mod_journal\event\course_module_viewed::create(array(
-   'objectid' => $journal->id,
+$event = \mod_scratchpad\event\course_module_viewed::create(array(
+   'objectid' => $scratchpad->id,
    'context' => $context
 ));
 $event->add_record_snapshot('course_modules', $cm);
 $event->add_record_snapshot('course', $course);
-$event->add_record_snapshot('journal', $journal);
+$event->add_record_snapshot('scratchpad', $scratchpad);
 $event->trigger();
 
 echo $OUTPUT->footer();

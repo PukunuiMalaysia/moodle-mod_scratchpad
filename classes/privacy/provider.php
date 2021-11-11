@@ -17,13 +17,13 @@
 /**
  * Data provider.
  *
- * @package    mod_journal
+ * @package    mod_scratchpad
  * @copyright  2018 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_journal\privacy;
+namespace mod_scratchpad\privacy;
 defined('MOODLE_INTERNAL') || die();
 
 use context;
@@ -38,7 +38,7 @@ use core_privacy\local\request\transform;
 use core_privacy\local\request\userlist;
 use core_privacy\local\request\writer;
 
-require_once($CFG->dirroot . '/mod/journal/lib.php');
+require_once($CFG->dirroot . '/mod/scratchpad/lib.php');
 
 class provider implements
     \core_privacy\local\metadata\provider,
@@ -53,15 +53,15 @@ class provider implements
      */
     public static function get_metadata(collection $collection) : collection {
         $collection->add_database_table(
-            'journal_entries',
+            'scratchpad_entries',
              [
-                'userid' => 'privacy:metadata:journal_entries:userid',
-                'modified' => 'privacy:metadata:journal_entries:modified',
-                'text' => 'privacy:metadata:journal_entries:text',
-                'rating' => 'privacy:metadata:journal_entries:rating',
-                'entrycomment' => 'privacy:metadata:journal_entries:entrycomment',
+                'userid' => 'privacy:metadata:scratchpad_entries:userid',
+                'modified' => 'privacy:metadata:scratchpad_entries:modified',
+                'text' => 'privacy:metadata:scratchpad_entries:text',
+                'rating' => 'privacy:metadata:scratchpad_entries:rating',
+                'entrycomment' => 'privacy:metadata:scratchpad_entries:entrycomment',
              ],
-            'privacy:metadata:journal_entries'
+            'privacy:metadata:scratchpad_entries'
         );
 
         return $collection;
@@ -79,18 +79,18 @@ class provider implements
             SELECT DISTINCT ctx.id
               FROM {%s} fc
               JOIN {modules} m
-                ON m.name = :journal
+                ON m.name = :scratchpad
               JOIN {course_modules} cm
-                ON cm.instance = fc.journal
+                ON cm.instance = fc.scratchpad
                AND cm.module = m.id
               JOIN {context} ctx
                 ON ctx.instanceid = cm.id
                AND ctx.contextlevel = :modlevel
              WHERE fc.userid = :userid";
 
-        $params = ['journal' => 'journal', 'modlevel' => CONTEXT_MODULE, 'userid' => $userid];
+        $params = ['scratchpad' => 'scratchpad', 'modlevel' => CONTEXT_MODULE, 'userid' => $userid];
         $contextlist = new contextlist();
-        $contextlist->add_from_sql(sprintf($sql, 'journal_entries'), $params);
+        $contextlist->add_from_sql(sprintf($sql, 'scratchpad_entries'), $params);
         return $contextlist;
     }
 
@@ -107,22 +107,22 @@ class provider implements
             return;
         }
 
-        // Find users with journal entries.
+        // Find users with scratchpad entries.
         $sql = "
             SELECT fc.userid
               FROM {%s} fc
               JOIN {modules} m
-                ON m.name = :journal
+                ON m.name = :scratchpad
               JOIN {course_modules} cm
-                ON cm.instance = fc.journal
+                ON cm.instance = fc.scratchpad
                AND cm.module = m.id
               JOIN {context} ctx
                 ON ctx.instanceid = cm.id
                AND ctx.contextlevel = :modlevel
              WHERE ctx.id = :contextid";
-        $params = ['journal' => 'journal', 'modlevel' => CONTEXT_MODULE, 'contextid' => $context->id];
+        $params = ['scratchpad' => 'scratchpad', 'modlevel' => CONTEXT_MODULE, 'contextid' => $context->id];
 
-        $userlist->add_from_sql('userid', sprintf($sql, 'journal_entries'), $params);
+        $userlist->add_from_sql('userid', sprintf($sql, 'scratchpad_entries'), $params);
     }
 
     /**
@@ -151,42 +151,42 @@ class provider implements
                     FROM {context} c
                     INNER JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
                     INNER JOIN {modules} m ON m.id = cm.module AND m.name = :modname
-                    INNER JOIN {journal} j ON j.id = cm.instance
-                    LEFT JOIN {journal_entries} as jen ON jen.journal = j.id
+                    INNER JOIN {scratchpad} j ON j.id = cm.instance
+                    LEFT JOIN {scratchpad_entries} as jen ON jen.scratchpad = j.id
                     WHERE jen.userid = :userid AND c.id {$contextsql}";
         $params = [
             'contextlevel'      => CONTEXT_MODULE,
-            'modname'           => 'journal',
+            'modname'           => 'scratchpad',
             'userid'          => $userid,
         ];
         $params += $contextparams;
 
-        // Fetch the individual journals entries.
-        $journals = $DB->get_recordset_sql($sql, $params);
-        foreach ($journals as $journal) {
-            list($course, $cm) = get_course_and_cm_from_cmid($journal->cmid, 'journal');
-            $journalobj = new \entry($journal, $cm, $course);
-            $context = $journalobj->get_context();
+        // Fetch the individual scratchpads entries.
+        $scratchpads = $DB->get_recordset_sql($sql, $params);
+        foreach ($scratchpads as $scratchpad) {
+            list($course, $cm) = get_course_and_cm_from_cmid($scratchpad->cmid, 'scratchpad');
+            $scratchpadobj = new \entry($scratchpad, $cm, $course);
+            $context = $scratchpadobj->get_context();
 
-            $journalentry = \core_privacy\local\request\helper::get_context_data($context, $contextlist->get_user());
+            $scratchpadentry = \core_privacy\local\request\helper::get_context_data($context, $contextlist->get_user());
             \core_privacy\local\request\helper::export_context_files($context, $contextlist->get_user());
 
-            if (!empty($journalentry->modified)) {
-                $journalentry->modified = transform::datetime($journal->modified);
+            if (!empty($scratchpadentry->modified)) {
+                $scratchpadentry->modified = transform::datetime($scratchpad->modified);
             }
-            if (!empty($journalentry->text)) {
-                $journalentry->text = $journal->text;
+            if (!empty($scratchpadentry->text)) {
+                $scratchpadentry->text = $scratchpad->text;
             }
-            if (!empty($journalentry->rating)) {
-                $journalentry->rating = $journal->rating;
+            if (!empty($scratchpadentry->rating)) {
+                $scratchpadentry->rating = $scratchpad->rating;
             }
-            if (!empty($journalentry->entrycomment)) {
-                $journalentry->entrycomment = $journal->entrycomment;
+            if (!empty($scratchpadentry->entrycomment)) {
+                $scratchpadentry->entrycomment = $scratchpad->entrycomment;
             }
 
-            writer::with_context($context)->export_data([], $journalentry);
+            writer::with_context($context)->export_data([], $scratchpadentry);
         }
-        $journals->close();
+        $scratchpads->close();
     }
 
     /**
@@ -208,18 +208,18 @@ class provider implements
             SELECT fc.id
               FROM {%s} fc
               JOIN {modules} m
-                ON m.name = :journal
+                ON m.name = :scratchpad
               JOIN {course_modules} cm
-                ON cm.instance = fc.journal
+                ON cm.instance = fc.scratchpad
                AND cm.module = m.id
              WHERE cm.id = :cmid";
-        $completedparams = ['cmid' => $context->instanceid, 'journal' => 'journal'];
+        $completedparams = ['cmid' => $context->instanceid, 'scratchpad' => 'scratchpad'];
 
-        // Delete journal entries.
-        $completedtmpids = $DB->get_fieldset_sql(sprintf($completedsql, 'journal_entries'), $completedparams);
+        // Delete scratchpad entries.
+        $completedtmpids = $DB->get_fieldset_sql(sprintf($completedsql, 'scratchpad_entries'), $completedparams);
         if (!empty($completedtmpids)) {
             list($insql, $inparams) = $DB->get_in_or_equal($completedtmpids, SQL_PARAMS_NAMED);
-            $DB->delete_records_select('journal_entries', "id $insql", $inparams);
+            $DB->delete_records_select('scratchpad_entries', "id $insql", $inparams);
         }
     }
 
@@ -245,19 +245,19 @@ class provider implements
             SELECT fc.id
               FROM {%s} fc
               JOIN {modules} m
-                ON m.name = :journal
+                ON m.name = :scratchpad
               JOIN {course_modules} cm
-                ON cm.instance = fc.journal
+                ON cm.instance = fc.scratchpad
                AND cm.module = m.id
              WHERE fc.userid = :userid
                AND cm.id $insql";
-        $completedparams = array_merge($inparams, ['userid' => $userid, 'journal' => 'journal']);
+        $completedparams = array_merge($inparams, ['userid' => $userid, 'scratchpad' => 'scratchpad']);
 
-        // Delete journal entries.
-        $completedtmpids = $DB->get_fieldset_sql(sprintf($completedsql, 'journal_entries'), $completedparams);
+        // Delete scratchpad entries.
+        $completedtmpids = $DB->get_fieldset_sql(sprintf($completedsql, 'scratchpad_entries'), $completedparams);
         if (!empty($completedtmpids)) {
             list($insql, $inparams) = $DB->get_in_or_equal($completedtmpids, SQL_PARAMS_NAMED);
-            $DB->delete_records_select('journal_entries', "id $insql", $inparams);
+            $DB->delete_records_select('scratchpad_entries', "id $insql", $inparams);
         }
     }
 
@@ -278,19 +278,19 @@ class provider implements
             SELECT fc.id
               FROM {%s} fc
               JOIN {modules} m
-                ON m.name = :journal
+                ON m.name = :scratchpad
               JOIN {course_modules} cm
-                ON cm.instance = fc.journal
+                ON cm.instance = fc.scratchpad
                AND cm.module = m.id
              WHERE cm.id = :instanceid
                AND fc.userid $insql";
-        $completedparams = array_merge($inparams, ['instanceid' => $context->instanceid, 'journal' => 'journal']);
+        $completedparams = array_merge($inparams, ['instanceid' => $context->instanceid, 'scratchpad' => 'scratchpad']);
 
-        // Delete all journal entries.
-        $completedtmpids = $DB->get_fieldset_sql(sprintf($completedsql, 'journal_entries'), $completedparams);
+        // Delete all scratchpad entries.
+        $completedtmpids = $DB->get_fieldset_sql(sprintf($completedsql, 'scratchpad_entries'), $completedparams);
         if (!empty($completedtmpids)) {
             list($insql, $inparams) = $DB->get_in_or_equal($completedtmpids, SQL_PARAMS_NAMED);
-            $DB->delete_records_select('journal_entries', "id $insql", $inparams);
+            $DB->delete_records_select('scratchpad_entries', "id $insql", $inparams);
         }
     }
 }

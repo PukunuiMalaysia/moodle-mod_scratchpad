@@ -15,20 +15,20 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The mod_journal entry created event.
+ * The mod_scratchpad entry created event.
  *
- * @package     mod_journal
+ * @package     mod_scratchpad
  * @copyright   2015 David Monllao
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_journal\event;
+namespace mod_scratchpad\event;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The mod_journal entry created class.
+ * The mod_scratchpad entry created class.
  *
- * @package    mod_journal
+ * @package    mod_scratchpad
  * @since      Moodle 3.1
  * @copyright  2015 David Monllao
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -41,7 +41,7 @@ class entry_created extends \core\event\base {
     protected function init() {
         $this->data['crud'] = 'c';
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
-        $this->data['objecttable'] = 'journal';
+        $this->data['objecttable'] = 'scratchpad';
     }
 
     /**
@@ -50,7 +50,7 @@ class entry_created extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('evententrycreated', 'mod_journal');
+        return get_string('evententrycreated', 'mod_scratchpad');
     }
 
     /**
@@ -59,7 +59,7 @@ class entry_created extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "The user with id '$this->userid' has created an entry for the journal activity with " .
+        return "The user with id '$this->userid' has created an entry for the scratchpad activity with " .
             "the course module id '$this->contextinstanceid'";
     }
 
@@ -68,7 +68,7 @@ class entry_created extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/journal/edit.php', array('id' => $this->contextinstanceid));
+        return new \moodle_url('/mod/scratchpad/edit.php', array('id' => $this->contextinstanceid));
     }
 
     /**
@@ -78,6 +78,6 @@ class entry_created extends \core\event\base {
      */
     protected function get_legacy_logdata() {
         $url = new \moodle_url('edit.php', array('id' => $this->contextinstanceid));
-        return array($this->courseid, 'journal', 'add entry', $url->out(), $this->objectid, $this->contextinstanceid);
+        return array($this->courseid, 'scratchpad', 'add entry', $url->out(), $this->objectid, $this->contextinstanceid);
     }
 }

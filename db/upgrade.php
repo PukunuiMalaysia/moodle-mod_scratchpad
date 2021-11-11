@@ -16,57 +16,57 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/mod/journal/lib.php');
+require_once($CFG->dirroot.'/mod/scratchpad/lib.php');
 
-function xmldb_journal_upgrade($oldversion=0) {
+function xmldb_scratchpad_upgrade($oldversion=0) {
     global $DB;
 
     $dbman = $DB->get_manager();
 
     // No DB changes since 1.9.0.
 
-    // Add journal instances to the gradebook.
+    // Add scratchpad instances to the gradebook.
     if ($oldversion < 2010120300) {
 
-        journal_update_grades();
+        scratchpad_update_grades();
 
-        upgrade_mod_savepoint(true, 2010120300, 'journal');
+        upgrade_mod_savepoint(true, 2010120300, 'scratchpad');
     }
 
     // Change assessed field for grade.
     if ($oldversion < 2011040600) {
 
-        // Rename field assessed on table journal to grade.
-        $table = new xmldb_table('journal');
+        // Rename field assessed on table scratchpad to grade.
+        $table = new xmldb_table('scratchpad');
         $field = new xmldb_field('assessed', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'days');
 
         // Launch rename field grade.
         $dbman->rename_field($table, $field, 'grade');
 
-        // Journal savepoint reached.
-        upgrade_mod_savepoint(true, 2011040600, 'journal');
+        // Scratchpad savepoint reached.
+        upgrade_mod_savepoint(true, 2011040600, 'scratchpad');
     }
 
     if ($oldversion < 2012032001) {
 
-        // Changing the default of field rating on table journal_entries to drop it.
-        $table = new xmldb_table('journal_entries');
+        // Changing the default of field rating on table scratchpad_entries to drop it.
+        $table = new xmldb_table('scratchpad_entries');
         $field = new xmldb_field('rating', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'format');
 
         // Launch change of default for field rating.
         $dbman->change_field_default($table, $field);
 
         // Updating the non-marked entries with rating = NULL.
-        $entries = $DB->get_records('journal_entries', array('timemarked' => 0));
+        $entries = $DB->get_records('scratchpad_entries', array('timemarked' => 0));
         if ($entries) {
             foreach ($entries as $entry) {
                 $entry->rating = null;
-                $DB->update_record('journal_entries', $entry);
+                $DB->update_record('scratchpad_entries', $entry);
             }
         }
 
-        // Journal savepoint reached.
-        upgrade_mod_savepoint(true, 2012032001, 'journal');
+        // Scratchpad savepoint reached.
+        upgrade_mod_savepoint(true, 2012032001, 'scratchpad');
     }
 
     return true;

@@ -16,11 +16,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-class backup_journal_activity_structure_step extends backup_activity_structure_step {
+class backup_scratchpad_activity_structure_step extends backup_activity_structure_step {
 
     protected function define_structure() {
 
-        $journal = new backup_nested_element('journal', array('id'), array(
+        $scratchpad = new backup_nested_element('scratchpad', array('id'), array(
             'name', 'intro', 'introformat', 'days', 'grade', 'timemodified'));
 
         $entries = new backup_nested_element('entries');
@@ -29,15 +29,15 @@ class backup_journal_activity_structure_step extends backup_activity_structure_s
             'userid', 'modified', 'text', 'format', 'rating',
             'entrycomment', 'teacher', 'timemarked', 'mailed'));
 
-        // Journal -> entries -> entry.
-        $journal->add_child($entries);
+        // Scratchpad -> entries -> entry.
+        $scratchpad->add_child($entries);
         $entries->add_child($entry);
 
         // Sources.
-        $journal->set_source_table('journal', array('id' => backup::VAR_ACTIVITYID));
+        $scratchpad->set_source_table('scratchpad', array('id' => backup::VAR_ACTIVITYID));
 
         if ($this->get_setting_value('userinfo')) {
-            $entry->set_source_table('journal_entries', array('journal' => backup::VAR_PARENTID));
+            $entry->set_source_table('scratchpad_entries', array('scratchpad' => backup::VAR_PARENTID));
         }
 
         // Define id annotations.
@@ -45,10 +45,10 @@ class backup_journal_activity_structure_step extends backup_activity_structure_s
         $entry->annotate_ids('user', 'teacher');
 
         // Define file annotations.
-        $journal->annotate_files('mod_journal', 'intro', null); // This file areas haven't itemid.
-        $entry->annotate_files('mod_journal_entries', 'text', null); // This file areas haven't itemid.
-        $entry->annotate_files('mod_journal_entries', 'entrycomment', null); // This file areas haven't itemid.
+        $scratchpad->annotate_files('mod_scratchpad', 'intro', null); // This file areas haven't itemid.
+        $entry->annotate_files('mod_scratchpad_entries', 'text', null); // This file areas haven't itemid.
+        $entry->annotate_files('mod_scratchpad_entries', 'entrycomment', null); // This file areas haven't itemid.
 
-        return $this->prepare_activity_structure($journal);
+        return $this->prepare_activity_structure($scratchpad);
     }
 }
