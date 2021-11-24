@@ -16,12 +16,12 @@
 #page-mod-scratchpad-report .feedbacksave {
     text-align: center;
 }
-#page-mod-scratchpad-view .lastedit,
-#page-mod-scratchpad-view .editend {
-    font-size: 0.7em;
-    margin: 5px;
-    text-align: center;
-}
+/* #page-mod-scratchpad-view .lastedit, */
+/* #page-mod-scratchpad-view .editend { */
+    /* font-size: 0.7em; */
+    /* margin: 5px; */
+    /* text-align: center; */
+/* } */
 #page-mod-scratchpad-view .author {
     font-size: 1em;
     font-weight: bold;
@@ -73,10 +73,17 @@
 #page-mod-scratchpad-report .scratchpaduserentry td.userfullname {
     white-space: nowrap;
 }
-#page-mod-scratchpad-report .scratchpaduserentry td .lastedit {
-    font-size: 0.76em;
-    margin-left: 10px;
-}
+/* #page-mod-scratchpad-report .scratchpaduserentry td .lastedit { */
+    /* font-size: 0.76em; */
+    /* margin-left: 10px; */
+/* } */
 #page-mod-scratchpad-report .mediaplugin {
     width: auto;
+}
+#page-mod-scratchpad-view .icon {
+    width: 48px;
+    height: 48px;
+}
+#page-mod-scratchpad-view td {
+    vertical-align: top;
 }
