@@ -16,6 +16,7 @@
 
 require_once("../../config.php");
 require_once('./edit_form.php');
+require_once($CFG->dirroot.'/lib/completionlib.php');
 
 $id = required_param('id', PARAM_INT);    // Course Module ID.
 
@@ -36,7 +37,10 @@ require_capability('mod/scratchpad:addentries', $context);
 if (! $scratchpad = $DB->get_record("scratchpad", array("id" => $cm->instance))) {
     print_error("Course module is incorrect");
 }
-
+if (!empty($scratchpad->preventry)){
+    $prev_scratchpad = $DB->get_record("scratchpad", array("id" => $scratchpad->preventry));
+    $prev_entry = $DB->get_record("scratchpad_entries", array("userid" => $USER->id, "scratchpad" => $scratchpad->preventry));
+}
 // Header.
 $PAGE->set_url('/mod/scratchpad/edit.php', array('id' => $id));
 $PAGE->navbar->add(get_string('edit'));
@@ -98,6 +102,12 @@ if ($form->is_cancelled()) {
         }
     }
 
+    // Update completion state.
+    $completion = new completion_info($course);
+    if ($completion->is_enabled($cm) && $scratchpad->completionanswer) {
+        $completion->update_state($cm, COMPLETION_COMPLETE);
+    }
+
     // Relink using the proper entryid.
     // We need to do this as draft area didn't have an itemid associated when creating the entry.
     $fromform = file_postupdate_standard_editor($fromform, 'text', $editoroptions,
@@ -133,6 +143,18 @@ if ($form->is_cancelled()) {
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string($scratchpad->name));
+
+$prev_intro = format_module_intro('scratchpad', $prev_scratchpad, $cm->id);
+
+if (!empty($prev_intro)){
+    echo '<table border="2" width="99%"><tr><td>';
+    echo $OUTPUT->box($prev_intro);
+    
+    if (!empty($prev_entry->text)){
+        echo $OUTPUT->box($prev_entry->text);
+    }
+    echo '</td></tr></table>';
+}
 
 $intro = format_module_intro('scratchpad', $scratchpad, $cm->id);
 echo $OUTPUT->box($intro);
