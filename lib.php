@@ -92,7 +92,7 @@ function scratchpad_supports($feature) {
         case FEATURE_MOD_INTRO:
             return true;
         case FEATURE_GRADE_HAS_GRADE:
-            return true;
+            return false;
         case FEATURE_GRADE_OUTCOMES:
             return false;
         case FEATURE_RATE:
@@ -106,6 +106,8 @@ function scratchpad_supports($feature) {
         case FEATURE_COMPLETION_TRACKS_VIEWS:
             return true;
         case FEATURE_BACKUP_MOODLE2:
+            return true;
+        case FEATURE_COMPLETION_HAS_RULES:
             return true;
         default:
             return null;
@@ -172,7 +174,8 @@ function scratchpad_user_complete($course, $user, $mod, $scratchpad) {
  */
 function scratchpad_cron () {
     global $CFG, $USER, $DB;
-
+    require_once($CFG->libdir.'/completionlib.php');
+    
     $cutofftime = time() - $CFG->maxeditingtime;
 
     if ($entries = scratchpad_get_unmailed_graded($cutofftime)) {
@@ -1029,5 +1032,38 @@ function scratchpad_format_entry_text($entry, $course = false, $cm = false) {
         'trusted' => false
     );
     return format_text($entrytext, $entry->format, $formatoptions);
+}
+
+/**
+  * Obtains the automatic completion state for this scratchpad based on any conditions
+  * in scratchpad settings.
+  *
+  * @param object $course Course
+  * @param object $cm Course-module
+  * @param int $userid User ID
+  * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
+  * @return bool True if completed, false if not, $type if conditions not set.
+  */
+function scratchpad_get_completion_state($course,$cm,$userid,$type) {
+    global $CFG,$DB;
+
+    // Get scratchpad details
+    $scratchpad = $DB->get_record('scratchpad', array('id' => $cm->instance), '*', MUST_EXIST);
+
+    // If completion option is enabled, evaluate it and return true/false 
+    if($scratchpad->completionanswer) {
+        return $scratchpad->completionanswer <= $DB->get_field_sql("
+SELECT 
+    COUNT(1) 
+FROM 
+    {scratchpad} s
+    INNER JOIN {scratchpad_entries} se ON s.id=se.scratchpad
+WHERE
+    se.userid=:userid AND se.scratchpad=:scratchpadid",
+            array('userid'=>$userid,'scratchpadid'=>$scratchpad->id));
+    } else {
+        // Completion option is not enabled so just return $type
+        return $type;
+    }
 }
 
