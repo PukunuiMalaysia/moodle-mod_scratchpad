@@ -21,7 +21,7 @@ class backup_scratchpad_activity_structure_step extends backup_activity_structur
     protected function define_structure() {
 
         $scratchpad = new backup_nested_element('scratchpad', array('id'), array(
-            'name', 'intro', 'introformat', 'days', 'grade', 'timemodified'));
+            'name', 'intro', 'introformat', 'days', 'grade', 'timemodified', 'preventry', 'mode', 'completionanswer'));
 
         $entries = new backup_nested_element('entries');
 

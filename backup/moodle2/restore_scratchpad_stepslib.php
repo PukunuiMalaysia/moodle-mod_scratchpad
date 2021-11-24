@@ -40,6 +40,7 @@ class restore_scratchpad_activity_structure_step extends restore_activity_struct
 
         $data->course = $this->get_courseid();
         $data->timemodified = $this->apply_date_offset($data->timemodified);
+        $data->preventry = $this->get_mappingid('scratchpad', $data->preventry);
 
         $newid = $DB->insert_record('scratchpad', $data);
         $this->apply_activity_instance($newid);
