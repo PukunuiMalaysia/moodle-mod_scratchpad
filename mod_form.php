@@ -59,7 +59,7 @@ class mod_scratchpad_mod_form extends moodleform_mod {
             $options[$a->id] = $a->name;
         }
         $cm = get_coursemodule_from_id('scratchpad', $current_id);
-        unset($options[$cm->instance]);
+        // unset($options[$cm->instance]);
         $mform->addElement('select', 'preventry', get_string('preventry', 'scratchpad'), $options);
         // $this->standard_grading_coursemodule_elements();
 
