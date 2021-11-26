@@ -1,7 +1,7 @@
 
 [![Build Status](https://travis-ci.org/elearningsoftware/moodle-mod_journal.svg?branch=master)](https://travis-ci.org/elearningsoftware/moodle-mod_journal)
 
-# Moodle Journal module
+# Moodle Scratchpad module (based on Journal module)
 - Documentation: http://docs.moodle.org/en/Journal_module
 - Source Code: https://github.com/elearningsoftware/moodle-mod_journal
 - License: http://www.gnu.org/licenses/gpl-2.0.txt
