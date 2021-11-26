@@ -144,7 +144,7 @@ if ($form->is_cancelled()) {
 echo $OUTPUT->header();
 echo $OUTPUT->heading(format_string($scratchpad->name));
 
-if(!empty($prev_scratchpad){
+if(!empty($prev_scratchpad)){
     $prev_intro = format_module_intro('scratchpad', $prev_scratchpad, $cm->id);
 }
 if (!empty($prev_intro)){
