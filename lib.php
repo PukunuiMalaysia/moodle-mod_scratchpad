@@ -665,20 +665,20 @@ function scratchpad_grade_item_update($scratchpad, $grades=null) {
         $params = array('itemname' => $scratchpad->name);
     }
 
-    if ($scratchpad->grade > 0) {
-        $params['gradetype']  = GRADE_TYPE_VALUE;
-        $params['grademax']   = $scratchpad->grade;
-        $params['grademin']   = 0;
-        $params['multfactor'] = 1.0;
+    // if ($scratchpad->grade > 0) {
+        // $params['gradetype']  = GRADE_TYPE_VALUE;
+        // $params['grademax']   = $scratchpad->grade;
+        // $params['grademin']   = 0;
+        // $params['multfactor'] = 1.0;
 
-    } else if ($scratchpad->grade < 0) {
-        $params['gradetype'] = GRADE_TYPE_SCALE;
-        $params['scaleid']   = -$scratchpad->grade;
+    // } else if ($scratchpad->grade < 0) {
+        // $params['gradetype'] = GRADE_TYPE_SCALE;
+        // $params['scaleid']   = -$scratchpad->grade;
 
-    } else {
-        $params['gradetype']  = GRADE_TYPE_NONE;
-        $params['multfactor'] = 1.0;
-    }
+    // } else {
+        // $params['gradetype']  = GRADE_TYPE_NONE;
+        // $params['multfactor'] = 1.0;
+    // }
 
     if ($grades === 'reset') {
         $params['reset'] = true;
