@@ -92,13 +92,16 @@ foreach ($cw as $section){
                 $item[$section->section]->sequence = $prep;
             }
         }else{
-            $item[$section->section]->sequence=[$section->sequence];
+            if (in_array($section->sequence, $modulesearch)){
+                $item[$section->section]->sequence=[$section->sequence];
+            }else{
+                unset($item[$section->section]);
+            }
         }
     }else{
         unset($item[$section->section]);
     }
 }
-
 
 $moduleid = $DB->get_record("modules", array('name' => 'scratchpad'));
 //Retrieve scratchpad modules in the course, remove deleted/hiddden and order by
