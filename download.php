@@ -126,7 +126,7 @@ $doc->setPrintHeader(false);
 $doc->setPrintFooter(false);
 $doc->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
 
-$doc->SetFont('Helvetica', 'BI', 20);
+$doc->SetFont('Helvetica', 'BI', 14);
 
 $doc->AddPage();
 
@@ -134,17 +134,17 @@ $html = '<h1>' . $categoryname . ':' . $coursename . '</h1>';
 $html .= '<h4>Name: ' . $username.'</h4>';
 
 foreach ($item as $list){
-    $html .= '<hr><h3>Section: ' . $list->section_name . '</h3>';
+    $html .= '<hr><h3>'.get_string("section", "scratchpad").': ' . $list->section_name . '</h3>';
     foreach ($list->sequence as $l){
         $obj = $sp[$moduleinstance[$l]];
         $pagetitle = format_string($obj->name, true);
         $question = format_string($obj->intro, true);
-        $html .= '<h4><u>Title: '.$pagetitle.'</u></h4>';
-        $html .= '<p>Question: '.$question.'</p>';
+        $html .= '<h4><u>'.get_string("title", "scratchpad").': '.$pagetitle.'</u></h4>';
+        $html .= '<p>'.get_string("question","scratchpad").': '.$question.'</p>';
         
         $entry = $DB->get_record('scratchpad_entries', array('userid' => $USER->id, 'scratchpad' => $obj->id));
         $text = format_string($entry->text, true);
-        $html .= '<p><em>Answer: '.$text.'</em></p>';
+        $html .= '<p><em>'.get_string("answer","scratchpad").': '.$text.'</em></p>';
     }
     $html .='<br>';
     

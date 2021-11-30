@@ -22,6 +22,11 @@ $string['evententryupdated'] = 'Scratchpad entry updated';
 $string['evententrycreated'] = 'Scratchpad entry created';
 $string['eventfeedbackupdated'] = 'Scratchpad feedback updated';
 
+$string['section'] = 'Section';
+$string['title'] = 'Title';
+$string['question'] = 'Question';
+$string['answer'] = 'Answer';
+
 $string['submitted'] = 'Submitted on';
 $string['accessdenied'] = 'Access denied';
 $string['alwaysopen'] = 'Always open';

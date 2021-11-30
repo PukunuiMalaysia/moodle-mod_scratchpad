@@ -67,7 +67,7 @@ echo $OUTPUT->heading($scratchpadname);
 // Check to see if groups are being used here.
 $groupmode = groups_get_activity_groupmode($cm);
 $currentgroup = groups_get_activity_group($cm, true);
-groups_print_activity_menu($cm, $CFG->wwwroot . "/mod/scratchpad/view.php?id=$cm->id");
+// groups_print_activity_menu($cm, $CFG->wwwroot . "/mod/scratchpad/view.php?id=$cm->id");
 
 // if ($entriesmanager) {
     // $entrycount = scratchpad_count_entries($scratchpad, $currentgroup);
@@ -77,7 +77,11 @@ groups_print_activity_menu($cm, $CFG->wwwroot . "/mod/scratchpad/view.php?id=$cm
 
 //Check download mode, and display the download page button
 if ($scratchpad->mode == 1){
-    echo get_string("downloadmesage", "scratchpad");
+    // echo get_string("downloadmesage", "scratchpad");
+    if (!empty($scratchpad->intro)) {
+        $intro = format_module_intro('scratchpad', $scratchpad, $cm->id);
+        echo '<table><tr><td>' . $OUTPUT->image_icon('q-button', '', 'scratchpad', array('style'=>'height:48px; width:48px')) . '</td><td>' . $intro .'</td></tr></table>';
+    }
     echo '<br /><br />';
     echo $OUTPUT->single_button('download.php?id='.$cm->id, get_string('download', 'scratchpad'), 'get',
                 array("class" => "singlebutton scratchpadstart"));
@@ -91,10 +95,10 @@ if (!empty($prev_scratchpad)){
     $prev_scratchpad->intro = trim($prev_scratchpad->intro);
     if (!empty($prev_scratchpad->intro)) {
         $intro = format_module_intro('scratchpad', $prev_scratchpad, $cm->id);
-        echo '<table><tr><td>' . $OUTPUT->image_icon('q-button', '', 'scratchpad') . '</td><td>' . $intro .'</td></tr></table>';
+        echo '<table><tr><td>' . $OUTPUT->image_icon('q-button', '', 'scratchpad', array('style'=>'height:48px; width:48px')) . '</td><td>' . $intro .'</td></tr></table>';
     }
 
-    echo '<br />';
+    // echo '<br />';
     $timenow = time();
     if ($course->format == 'weeks' and $prev_scratchpad->days) {
     $timestart = $course->startdate + (($cw->section - 1) * 604800);
@@ -119,13 +123,13 @@ if (!empty($prev_scratchpad)){
             echo '<p align="center"><b>'.get_string('blankentry', 'scratchpad').'</b></p>';
         } else {
             // echo '<br>'. $OUTPUT->image_icon('a-button', '', 'scratchpad') . scratchpad_format_entry_text($entry, $course, $cm);
-            echo '<table><tr><td>' . $OUTPUT->image_icon('a-button', '', 'scratchpad') . '</td><td>' . scratchpad_format_entry_text($prev_entry, $course, $cm) .'</td></tr></table>';
+            echo '<table><tr><td>' . $OUTPUT->image_icon('a-button', '', 'scratchpad', array('style'=>'height:48px; width:48px')) . '</td><td>' . scratchpad_format_entry_text($prev_entry, $course, $cm) .'</td></tr></table>';
         }
     } else {
         echo '<br><span class="warning">'.get_string('notstarted', 'scratchpad').'</span>';
     }
 
-    echo '<br />';
+    // echo '<br />';
 
     // Edit button.
     // if ($timenow < $timefinish) {
@@ -174,16 +178,16 @@ if (!empty($prev_scratchpad)){
     }
     echo '</td></tr></table>';
 
-echo '<br /><hr>';
+echo '<hr>';
 }
 
 $scratchpad->intro = trim($scratchpad->intro);
 if (!empty($scratchpad->intro)) {
     $intro = format_module_intro('scratchpad', $scratchpad, $cm->id);
-    echo '<table><tr><td>' . $OUTPUT->image_icon('q-button', '', 'scratchpad') . '</td><td>' . $intro .'</td></tr></table>';
+    echo '<table><tr><td>' . $OUTPUT->image_icon('q-button', '', 'scratchpad', array('style'=>'height:48px; width:48px')) . '</td><td>' . $intro .'</td></tr></table>';
 }
 
-echo '<br />';
+// echo '<br />';
 
 $timenow = time();
 if ($course->format == 'weeks' and $scratchpad->days) {
@@ -209,13 +213,13 @@ if ($timenow > $timestart) {
             echo '<p align="center"><b>'.get_string('blankentry', 'scratchpad').'</b></p>';
         } else {
             // echo '<br>'. $OUTPUT->image_icon('a-button', '', 'scratchpad') . scratchpad_format_entry_text($entry, $course, $cm);
-            echo '<table><tr><td>' . $OUTPUT->image_icon('a-button', '', 'scratchpad') . '</td><td>' . scratchpad_format_entry_text($entry, $course, $cm) .'</td></tr></table>';
+            echo '<table><tr><td>' . $OUTPUT->image_icon('a-button', '', 'scratchpad', array('style'=>'height:48px; width:48px')) . '</td><td>' . scratchpad_format_entry_text($entry, $course, $cm) .'</td></tr></table>';
         }
     } else {
         echo '<br><span class="warning">'.get_string('notstarted', 'scratchpad').'</span>';
     }
     
-    echo '<br />';
+    // echo '<br />';
     
     // Edit button.
     if ($timenow < $timefinish) {
