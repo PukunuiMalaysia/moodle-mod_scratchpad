@@ -119,7 +119,11 @@ foreach ($moduleslist as $module){
 
 usort($cw, 'cmp');
 $sp = $DB->get_records("scratchpad", array("course" => $course->id));
-
+foreach ($sp as $s){
+    if ($s->mode == 1){
+        unset($sp[$s->id]);
+    }
+}
 ob_clean();
 $doc = new pdf();
 $doc->setPrintHeader(false);
@@ -134,20 +138,28 @@ $html = '<h1>' . $categoryname . ':' . $coursename . '</h1>';
 $html .= '<h4>Name: ' . $username.'</h4>';
 
 foreach ($item as $list){
-    $html .= '<hr><h3>'.get_string("section", "scratchpad").': ' . $list->section_name . '</h3>';
+    $htmlsection = $htmlmodule = '';
+    $htmlsection .= '<hr><h3>'.get_string("section", "scratchpad").': ' . $list->section_name . '</h3>';
     foreach ($list->sequence as $l){
         $obj = $sp[$moduleinstance[$l]];
+        if (empty($obj)){
+            continue;
+        }
         $pagetitle = format_string($obj->name, true);
         $question = format_string($obj->intro, true);
-        $html .= '<h4><u>'.get_string("title", "scratchpad").': '.$pagetitle.'</u></h4>';
-        $html .= '<p>'.get_string("question","scratchpad").': '.$question.'</p>';
+        $htmlmodule = '<h4><u>'.get_string("title", "scratchpad").': '.$pagetitle.'</u></h4>';
+        $htmlmodule .= '<p>'.get_string("question","scratchpad").': '.$question.'</p>';
         
         $entry = $DB->get_record('scratchpad_entries', array('userid' => $USER->id, 'scratchpad' => $obj->id));
         $text = format_string($entry->text, true);
-        $html .= '<p><em>'.get_string("answer","scratchpad").': '.$text.'</em></p>';
+        $htmlmodule .= '<p><em>'.get_string("answer","scratchpad").': '.$text.'</em></p>';
     }
-    $html .='<br>';
     
+    if (!empty($htmlmodule)){
+        $html .= $htmlsection;
+        $html .= $htmlmodule;
+        $html .='<br>';
+    }
 }
 // output the HTML content
 $doc->writeHTML($html, true, false, true, false, '');
