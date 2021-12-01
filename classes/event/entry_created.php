@@ -19,6 +19,7 @@
  *
  * @package     mod_scratchpad
  * @copyright   2015 David Monllao
+ * @copyright  2021 Tengku Alauddin - din@pukunui.net
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

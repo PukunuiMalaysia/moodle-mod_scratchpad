@@ -18,10 +18,10 @@
  * This page lists all the instances of scratchpad in a particular course
  *
  * @package mod_scratchpad
- * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @copyright  2021 Tengku Alauddin - din@pukunui.net
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
-
 
 require_once(__DIR__ . "/../../config.php");
 require_once("lib.php");

@@ -17,10 +17,11 @@
 /**
  * Scratchpad entries search.
  *
- * @package    mod_scratchpad
+ * @package mod_scratchpad
  * @copyright  2016 David Monllao {@link http://www.davidmonllao.com}
+ * @copyright  2021 Tengku Alauddin - din@pukunui.net
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+ **/
 
 namespace mod_scratchpad\search;
 

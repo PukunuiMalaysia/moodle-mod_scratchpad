@@ -17,6 +17,15 @@
 // Only when master becomes a stable the version value will be changed for
 // the current date. Otherwise we just increase the last NN by one.
 
+/**
+ * Version page
+ *
+ * @package mod_scratchpad
+ * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @copyright  2021 Tengku Alauddin - din@pukunui.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ **/
+
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_scratchpad';

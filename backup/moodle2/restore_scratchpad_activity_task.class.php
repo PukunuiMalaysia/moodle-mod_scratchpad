@@ -14,6 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Restore function
+ *
+ * @package mod_scratchpad
+ * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @copyright  2021 Tengku Alauddin - din@pukunui.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ **/
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot.'/mod/scratchpad/backup/moodle2/restore_scratchpad_stepslib.php');
