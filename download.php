@@ -125,8 +125,6 @@ $doc->setPrintHeader(false);
 $doc->setPrintFooter(false);
 $doc->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
 
-$doc->SetFont('Helvetica', 'BI', 14);
-
 $doc->AddPage();
 
 $html = '<h1>' . $categoryname . ':' . $coursename . '</h1>';
