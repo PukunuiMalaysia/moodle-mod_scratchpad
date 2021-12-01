@@ -75,7 +75,7 @@ if ($scratchpad->mode == 1){
     // echo get_string("downloadmesage", "scratchpad");
     if (!empty($scratchpad->intro)) {
         $intro = format_module_intro('scratchpad', $scratchpad, $cm->id);
-        echo '<table><tr><td>' . $OUTPUT->image_icon('q-button', '', 'scratchpad', array('style'=>'height:48px; width:48px')) . '</td><td>' . $intro .'</td></tr></table>';
+        echo '<table><tr><td>' . $intro .'</td></tr></table>';
     }
     echo '<br /><br />';
     echo $OUTPUT->single_button('download.php?id='.$cm->id, get_string('download', 'scratchpad'), 'get',
