@@ -134,20 +134,20 @@ $html .= '<h4>Name: ' . $username.'</h4>';
 
 foreach ($item as $list){
     $htmlsection = $htmlmodule = '';
-    $htmlsection .= '<hr><h3>'.get_string("section", "scratchpad").': ' . $list->section_name . '</h3>';
+    $htmlsection .= '<hr><h3>'. $list->section_name . '</h3>';
     foreach ($list->sequence as $l){
         $obj = $sp[$moduleinstance[$l]];
         if (empty($obj)){
             continue;
         }
-        $pagetitle = format_string($obj->name, true);
-        $question = format_string($obj->intro, true);
-        $htmlmodule = '<h4><u>'.get_string("title", "scratchpad").': '.$pagetitle.'</u></h4>';
-        $htmlmodule .= '<p>'.get_string("question","scratchpad").': '.$question.'</p>';
+        $pagetitle = $obj->name;
+        $question = $obj->intro;
+        $htmlmodule = '<h4><u>'.$pagetitle.'</u></h4>';
+        $htmlmodule .= '<p>'.$question.'</p>';
         
         $entry = $DB->get_record('scratchpad_entries', array('userid' => $USER->id, 'scratchpad' => $obj->id));
-        $text = format_string($entry->text, true);
-        $htmlmodule .= '<p><em>'.get_string("answer","scratchpad").': '.$text.'</em></p>';
+        $text = $entry->text;
+        $htmlmodule .= '<p><em>'.$text.'</em></p>';
     }
     
     if (!empty($htmlmodule)){
