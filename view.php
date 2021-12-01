@@ -110,7 +110,7 @@ if (!empty($prev_scratchpad)){
     }
     if ($timenow > $timestart) {
 
-    echo $OUTPUT->box_start();
+    // echo $OUTPUT->box_start();
 
     // Display entry.
     if ($prev_entry = $DB->get_record('scratchpad_entries', array('userid' => $USER->id, 'scratchpad' => $prev_scratchpad->id))) {
@@ -135,7 +135,7 @@ if (!empty($prev_scratchpad)){
         // }
     // }
 
-    echo $OUTPUT->box_end();
+    // echo $OUTPUT->box_end();
 
     // Info.
     if ($timenow < $timefinish) {
@@ -200,7 +200,7 @@ if ($course->format == 'weeks' and $scratchpad->days) {
 }
 if ($timenow > $timestart) {
 
-    echo $OUTPUT->box_start();
+    // echo $OUTPUT->box_start();
 
     // Display entry.
     if ($entry = $DB->get_record('scratchpad_entries', array('userid' => $USER->id, 'scratchpad' => $scratchpad->id))) {
@@ -220,12 +220,12 @@ if ($timenow > $timestart) {
     if ($timenow < $timefinish) {
     
         if ($canadd) {
-            echo $OUTPUT->single_button('edit.php?id='.$cm->id, get_string('startoredit', 'scratchpad'), 'get',
+            echo '<br>' . $OUTPUT->single_button('edit.php?id='.$cm->id, get_string('startoredit', 'scratchpad'), 'get',
                 array("class" => "singlebutton scratchpadstart"));
         }
     }
 
-    echo $OUTPUT->box_end();
+    // echo $OUTPUT->box_end();
 
     // Info.
     if ($timenow < $timefinish) {
