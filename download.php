@@ -132,26 +132,30 @@ $html .= '<h4>Name: ' . $username.'</h4>';
 
 foreach ($item as $list){
     $htmlsection = $htmlmodule = '';
+    $section_count = 0;
     $htmlsection .= '<hr><h3>'. $list->section_name . '</h3>';
     foreach ($list->sequence as $l){
+        $section_count++;
         $obj = $sp[$moduleinstance[$l]];
         if (empty($obj)){
             continue;
         }
         $pagetitle = $obj->name;
         $question = $obj->intro;
-        $htmlmodule = '<h4><u>'.$pagetitle.'</u></h4>';
-        $htmlmodule .= '<p>'.$question.'</p>';
+        $htmlmodule = '<strong><u>'.$pagetitle.'</u></strong><br>';
+        $htmlmodule .= $question;
         
         $entry = $DB->get_record('scratchpad_entries', array('userid' => $USER->id, 'scratchpad' => $obj->id));
         $text = $entry->text;
         $htmlmodule .= '<p><em>'.$text.'</em></p>';
-    }
-    
-    if (!empty($htmlmodule)){
-        $html .= $htmlsection;
-        $html .= $htmlmodule;
-        $html .='<br>';
+        
+        if (!empty($htmlmodule)){
+            if ($section_count == 1){
+                $html .= $htmlsection;                
+            }
+            $html .= $htmlmodule;
+            $html .='<br>';
+        }
     }
 }
 // output the HTML content
