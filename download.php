@@ -27,10 +27,6 @@ require_once("../../config.php");
 require_once("lib.php");
 require_once($CFG->libdir . '/pdflib.php');
 
-function cmp($a, $b){
-    return strcmp($a->section, $b->section);
-}
-
 $id = required_param('id', PARAM_INT);    // Course Module ID.
 
 if (! $cm = get_coursemodule_from_id('scratchpad', $id)) {
@@ -53,7 +49,7 @@ if (! $scratchpad = $DB->get_record("scratchpad", array("id" => $cm->instance)))
     print_error("Course module is incorrect");
 }
 //Retrieve sections from course, sort by section and retrieve course module ids
-if (! $cw = $DB->get_records("course_sections", array('course' => $cm->course))) {
+if (! $cw = $DB->get_records("course_sections", array('course' => $cm->course), 'section')) {
     print_error("Course module is incorrect");
 }
 
@@ -126,7 +122,6 @@ foreach ($moduleslist as $module){
     }
 }
 
-usort($cw, 'cmp');
 $sp = $DB->get_records("scratchpad", array("course" => $course->id));
 foreach ($sp as $s){
     if ($s->mode == 1){
