@@ -43,7 +43,7 @@ if (! $course = $DB->get_record("course", array('id' => $cm->course))) {
 $categoryname = $DB->get_record("course_categories", array('id' => $course->category));
 $categoryname = $categoryname->name;
 $coursename = $course->fullname;
-$username = $USER->firstname . ' ' . $USER->lastname;
+$username = fullname($USER);
 
 $context = context_module::instance($cm->id);
 
