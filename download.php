@@ -142,7 +142,7 @@ $doc->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
 $doc->AddPage();
 
 $html = '<h1>' . $categoryname . ':' . $coursename . '</h1>';
-$html .= '<h4>Name: ' . $username.'</h4>';
+$html .= '<h4>' .get_string('name', 'scratchpad') . $username.'</h4>';
 
 foreach ($item as $list){
     $htmlsection = $htmlmodule = '';

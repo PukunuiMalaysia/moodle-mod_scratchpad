@@ -35,6 +35,7 @@ $string['section'] = 'Section';
 $string['title'] = 'Title';
 $string['question'] = 'Question';
 $string['answer'] = 'Answer';
+$string['name'] = 'Name: ';
 
 $string['submitted'] = 'Submitted on';
 $string['accessdenied'] = 'Access denied';
