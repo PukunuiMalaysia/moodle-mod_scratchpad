@@ -61,13 +61,19 @@ class mod_scratchpad_mod_form extends moodleform_mod {
         
         $link = $DB->get_records("scratchpad", array("course" => $COURSE->id));
         $current_id = optional_param('update', '', PARAM_INT);    // Course Module ID.
+        $cm = '';
 
         $options = array();
         $options[0] = get_string('blankentry', 'scratchpad');
         foreach($link as $a){
             $options[$a->id] = $a->name;
         }
-        $cm = get_coursemodule_from_id('scratchpad', $current_id);
+
+        // Added checking for empty $current_id which triggers error for PostgreSQL
+        if (!empty($current_id)){
+            $cm = get_coursemodule_from_id('scratchpad', $current_id);
+        }
+
         if (!empty($cm)){
             unset($options[$cm->instance]);
         }
