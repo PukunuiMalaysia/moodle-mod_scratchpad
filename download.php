@@ -159,7 +159,7 @@ foreach ($item as $list){
         
         $entry = $DB->get_record('scratchpad_entries', array('userid' => $USER->id, 'scratchpad' => $obj->id));
         $text = format_text($entry->text, FORMAT_PLAIN);
-        $text = strip_tags(html_entity_decode($text));
+        #$text = strip_tags(html_entity_decode($text));
         $htmlmodule .= '<p><em>'.$text.'</em></p>';
         
         if (!empty($htmlmodule)){

@@ -26,7 +26,6 @@
 require_once("../../config.php");
 require_once('./edit_form.php');
 require_once($CFG->dirroot.'/lib/completionlib.php');
-
 $id = required_param('id', PARAM_INT);    // Course Module ID.
 
 if (!$cm = get_coursemodule_from_id('scratchpad', $id)) {
@@ -78,11 +77,10 @@ $editoroptions = array(
     'enable_filemanagement' => true
 );
 
-$data = file_prepare_standard_editor($data, 'text', $editoroptions, $context, 'mod_scratchpad', 'entry', $data->entryid);
+#$data = file_prepare_standard_editor($data, 'text', $editoroptions, $context, 'mod_scratchpad', 'entry', $data->entryid);
 
-$form = new mod_scratchpad_entry_form(null, array('entryid' => $data->entryid, 'editoroptions' => $editoroptions));
-$form->set_data($data);
-
+$form = new mod_scratchpad_entry_form(null, array('entryid' => $data->entryid, 'text_editor' => $data->text));
+#$form->set_data($data);
 if ($form->is_cancelled()) {
     redirect($CFG->wwwroot . '/mod/scratchpad/view.php?id=' . $cm->id);
 } else if ($fromform = $form->get_data()) {
@@ -94,8 +92,8 @@ if ($form->is_cancelled()) {
 
     // This will be overwriten after being we have the entryid.
     $newentry = new stdClass();
-    $newentry->text = $fromform->text_editor['text'];
-    $newentry->format = $fromform->text_editor['format'];
+    $newentry->text = $fromform->text_editor;
+    $newentry->format = FORMAT_HTML;
     $newentry->modified = $timenow;
 
     if ($entry) {
@@ -119,10 +117,10 @@ if ($form->is_cancelled()) {
 
     // Relink using the proper entryid.
     // We need to do this as draft area didn't have an itemid associated when creating the entry.
-    $fromform = file_postupdate_standard_editor($fromform, 'text', $editoroptions,
-        $editoroptions['context'], 'mod_scratchpad', 'entry', $newentry->id);
-    $newentry->text = $fromform->text;
-    $newentry->format = $fromform->textformat;
+    // $fromform = file_postupdate_standard_editor($fromform, 'text', $editoroptions,
+    //     $editoroptions['context'], 'mod_scratchpad', 'entry', $newentry->id);
+    $newentry->text = $fromform->text_editor;
+    $newentry->format = FORMAT_HTML;
 
     $DB->update_record('scratchpad_entries', $newentry);
 
@@ -147,6 +145,8 @@ if ($form->is_cancelled()) {
 
     redirect(new moodle_url('/mod/scratchpad/view.php?id='.$cm->id));
     die;
+} else{
+    $form->set_data(['text_editor' => $data->text, 'id' => $data->id]);
 }
 
 
