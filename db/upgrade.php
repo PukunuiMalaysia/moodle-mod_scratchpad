@@ -28,5 +28,23 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot.'/mod/scratchpad/lib.php');
 
 function xmldb_scratchpad_upgrade($oldversion=0) {
+    global $CFG, $DB;
+
+    $dbman = $DB->get_manager();
+    if ($oldversion < 2021113007) {
+        #Cleanup for text
+        $search = array("<br />", "<br>", "><", '&nbsp;');
+        $replace  = array("\n", "\n", ">\n<", ' ');
+
+        $rs = $DB->get_recordset_sql('SELECT id, text FROM {scratchpad_entries}', []);
+        foreach ($rs as $record){
+            $newline = str_replace($search, $replace, $record->text);
+            $newline = strip_tags(html_entity_decode($newline));
+            $record->text = $newline;
+
+            $DB->update_record('scratchpad_entries', $record);
+        }
+        $rs->close();
+    }
     return true;
 }
