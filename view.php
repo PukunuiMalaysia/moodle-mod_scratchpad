@@ -132,7 +132,7 @@ if (!empty($prev_scratchpad)){
             echo '<p align="center"><b>'.get_string('blankentry', 'scratchpad').'</b></p>';
         } else {
             // echo '<br>'. $OUTPUT->image_icon('a-button', '', 'scratchpad') . scratchpad_format_entry_text($entry, $course, $cm);
-            echo '<table><tr><td>' . $OUTPUT->image_icon('a-button', '', 'scratchpad', array('style'=>'height:48px; width:48px')) . '</td><td>' . scratchpad_format_entry_text($prev_entry, $course, $cm) .'</td></tr></table>';
+            echo '<table><tr><td>' . $OUTPUT->image_icon('a-button', '', 'scratchpad', array('style'=>'height:48px; width:48px')) . '</td><td>' . format_text((scratchpad_format_entry_text($prev_entry, $course, $cm)), FORMAT_PLAIN) .'</td></tr></table>';
         }
     } else {
         echo '<br><span class="warning">'.get_string('notstarted', 'scratchpad').'</span>';
