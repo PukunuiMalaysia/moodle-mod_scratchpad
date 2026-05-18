@@ -18,8 +18,10 @@
  * The mod_scratchpad course module viewed event.
  *
  * @package    mod_scratchpad
+ * @author     Vinny Stocker <vinny@pukunui.com>
  * @copyright  2014 drachels@drachels.com
  * @copyright  2021 Tengku Alauddin - din@pukunui.net
+ * @copyright  2026 Pukunui Malaysia
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

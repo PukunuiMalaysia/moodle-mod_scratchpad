@@ -17,9 +17,11 @@
 /**
  * Settings page
  *
- * @package mod_scratchpad
+ * @package    mod_scratchpad
+ * @author     Vinny Stocker <vinny@pukunui.com>
  * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @copyright  2021 Tengku Alauddin - din@pukunui.net
+ * @copyright  2026 Pukunui Malaysia
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
 

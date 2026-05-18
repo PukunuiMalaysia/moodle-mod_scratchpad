@@ -17,10 +17,12 @@
 /**
  * The mod_scratchpad entry created event.
  *
- * @package     mod_scratchpad
+ * @package    mod_scratchpad
+ * @author     Vinny Stocker <vinny@pukunui.com>
  * @copyright   2015 David Monllao
  * @copyright  2021 Tengku Alauddin - din@pukunui.net
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  2026 Pukunui Malaysia
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace mod_scratchpad\event;

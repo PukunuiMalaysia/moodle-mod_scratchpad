@@ -11,3 +11,8 @@
 - Copy to the Moodle mod/ folder
 - Click the 'Notifications' link on the frontpage administration block or **php admin/cli/upgrade.php** if you have access to a command line interpreter.
 
+## Author And Licence
+*   **Author:** Vinny Stocker <vinny@pukunui.com> (and original contributors)
+*   **Copyright:** 2026 Pukunui Malaysia (and original copyright holders)
+*   **Licence:** GNU GPL v3 or later
+*   **Component:** mod_scratchpad

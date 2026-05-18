@@ -20,7 +20,9 @@
  * @package    mod_scratchpad
  * @copyright  2018 Frédéric Massart
  * @author     Frédéric Massart <fred@branchup.tech>  
+ * @author     Vinny Stocker <vinny@pukunui.com>
  * @copyright  2021 Tengku Alauddin - din@pukunui.net
+ * @copyright  2026 Pukunui Malaysia
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
