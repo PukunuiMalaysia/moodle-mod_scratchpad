@@ -37,6 +37,7 @@ $string['question'] = 'Question';
 $string['answer'] = 'Answer';
 
 $string['submitted'] = 'Submitted on';
+$string['tasksendfeedbacknotifications'] = 'Send scratchpad feedback notifications';
 $string['accessdenied'] = 'Access denied';
 $string['alwaysopen'] = 'Always open';
 $string['blankentry'] = 'Blank entry';

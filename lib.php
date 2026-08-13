@@ -97,6 +97,11 @@ function scratchpad_delete_instance($id) {
 
 
 function scratchpad_supports($feature) {
+    // Activity purposes were introduced in Moodle 4.0.
+    if (defined('FEATURE_MOD_PURPOSE') && $feature === FEATURE_MOD_PURPOSE) {
+        return MOD_PURPOSE_ASSESSMENT;
+    }
+
     switch($feature) {
         case FEATURE_MOD_INTRO:
             return true;
@@ -175,116 +180,6 @@ function scratchpad_user_complete($course, $user, $mod, $scratchpad) {
     } else {
         print_string("noentry", "scratchpad");
     }
-}
-
-/**
- * Function to be run periodically according to the moodle cron.
- * Finds all scratchpad notifications that have yet to be mailed out, and mails them.
- */
-function scratchpad_cron () {
-    global $CFG, $USER, $DB;
-    require_once($CFG->libdir.'/completionlib.php');
-    
-    $cutofftime = time() - $CFG->maxeditingtime;
-
-    if ($entries = scratchpad_get_unmailed_graded($cutofftime)) {
-        $timenow = time();
-
-        $usernamefields = get_all_user_name_fields();
-        $requireduserfields = 'id, auth, mnethostid, email, mailformat, maildisplay, lang, deleted, suspended, '
-                .implode(', ', $usernamefields);
-
-        // To save some db queries.
-        $users = array();
-        $courses = array();
-
-        foreach ($entries as $entry) {
-
-            echo "Processing scratchpad entry $entry->id\n";
-
-            if (!empty($users[$entry->userid])) {
-                $user = $users[$entry->userid];
-            } else {
-                if (!$user = $DB->get_record("user", array("id" => $entry->userid), $requireduserfields)) {
-                    echo "Could not find user $entry->userid\n";
-                    continue;
-                }
-                $users[$entry->userid] = $user;
-            }
-
-            $USER->lang = $user->lang;
-
-            if (!empty($courses[$entry->course])) {
-                $course = $courses[$entry->course];
-            } else {
-                if (!$course = $DB->get_record('course', array('id' => $entry->course), 'id, shortname')) {
-                    echo "Could not find course $entry->course\n";
-                    continue;
-                }
-                $courses[$entry->course] = $course;
-            }
-
-            if (!empty($users[$entry->teacher])) {
-                $teacher = $users[$entry->teacher];
-            } else {
-                if (!$teacher = $DB->get_record("user", array("id" => $entry->teacher), $requireduserfields)) {
-                    echo "Could not find teacher $entry->teacher\n";
-                    continue;
-                }
-                $users[$entry->teacher] = $teacher;
-            }
-
-            // All cached.
-            $coursescratchpads = get_fast_modinfo($course)->get_instances_of('scratchpad');
-            if (empty($coursescratchpads) || empty($coursescratchpads[$entry->scratchpad])) {
-                echo "Could not find course module for scratchpad id $entry->scratchpad\n";
-                continue;
-            }
-            $mod = $coursescratchpads[$entry->scratchpad];
-
-            // This is already cached internally.
-            $context = context_module::instance($mod->id);
-            $canadd = has_capability('mod/scratchpad:addentries', $context, $user);
-            $entriesmanager = has_capability('mod/scratchpad:manageentries', $context, $user);
-
-            if (!$canadd and $entriesmanager) {
-                continue;  // Not an active participant.
-            }
-
-            $scratchpadinfo = new stdClass();
-            $scratchpadinfo->teacher = fullname($teacher);
-            $scratchpadinfo->scratchpad = format_string($entry->name, true);
-            $scratchpadinfo->url = "$CFG->wwwroot/mod/scratchpad/view.php?id=$mod->id";
-            $modnamepl = get_string( 'modulenameplural', 'scratchpad' );
-            $msubject = get_string( 'mailsubject', 'scratchpad' );
-
-            $postsubject = "$course->shortname: $msubject: ".format_string($entry->name, true);
-            $posttext  = "$course->shortname -> $modnamepl -> ".format_string($entry->name, true)."\n";
-            $posttext .= "---------------------------------------------------------------------\n";
-            $posttext .= get_string("scratchpadmail", "scratchpad", $scratchpadinfo)."\n";
-            $posttext .= "---------------------------------------------------------------------\n";
-            if ($user->mailformat == 1) {  // HTML.
-                $posthtml = "<p><font face=\"sans-serif\">".
-                "<a href=\"$CFG->wwwroot/course/view.php?id=$course->id\">$course->shortname</a> ->".
-                "<a href=\"$CFG->wwwroot/mod/scratchpad/index.php?id=$course->id\">scratchpads</a> ->".
-                "<a href=\"$CFG->wwwroot/mod/scratchpad/view.php?id=$mod->id\">".format_string($entry->name, true)."</a></font></p>";
-                $posthtml .= "<hr /><font face=\"sans-serif\">";
-                $posthtml .= "<p>".get_string("scratchpadmailhtml", "scratchpad", $scratchpadinfo)."</p>";
-                $posthtml .= "</font><hr />";
-            } else {
-                $posthtml = "";
-            }
-
-            if (! email_to_user($user, $teacher, $postsubject, $posttext, $posthtml)) {
-                echo "Error: Scratchpad cron: Could not send out mail for id $entry->id to user $user->id ($user->email)\n";
-            }
-            if (!$DB->set_field("scratchpad_entries", "mailed", "1", array("id" => $entry->id))) {
-                echo "Could not update the mailed field for id $entry->id\n";
-            }
-        }
-    }
-
-    return true;
 }
 
 /**
