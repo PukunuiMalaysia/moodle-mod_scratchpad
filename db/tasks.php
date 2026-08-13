@@ -15,20 +15,22 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version page
+ * Scheduled task configuration for mod_scratchpad.
  *
  * @package    mod_scratchpad
- * @author     Vinny Stocker <vinny@pukunui.com>
- * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
- * @copyright  2021 Tengku Alauddin - din@pukunui.net
  * @copyright  2026 Pukunui Malaysia
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- **/
+ */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'mod_scratchpad';
-$plugin->version  = 2026081300;
-$plugin->requires = 2017111300;  /* Moodle 3.4 */
-$plugin->release = '1.0.2 (Build: 2026081300)';
-$plugin->maturity = MATURITY_STABLE;
+$tasks = [
+    [
+        'classname' => 'mod_scratchpad\\task\\send_feedback_notifications',
+        'minute' => '*',
+        'hour' => '*',
+        'day' => '*',
+        'month' => '*',
+        'dayofweek' => '*',
+    ],
+];
