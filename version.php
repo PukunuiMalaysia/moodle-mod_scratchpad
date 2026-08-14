@@ -28,8 +28,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_scratchpad';
-$plugin->version = 2026081400;
-$plugin->requires = 2024100700;
-$plugin->supported = [405, 405];
-$plugin->release = '1.0.3 (Build: 2026081400)';
+$plugin->version = 2026081401;
+$plugin->requires = 2026042000;
+$plugin->supported = [502, 502];
+$plugin->release = '1.0.4 (Build: 2026081401)';
 $plugin->maturity = MATURITY_STABLE;

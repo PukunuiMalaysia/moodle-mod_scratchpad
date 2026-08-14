@@ -1,6 +1,6 @@
 # Scratchpad activity
 
-Scratchpad is a focused reflection activity for Moodle 4.5. Teachers pose a question, each student maintains an individual response, and teachers can review, grade, and provide personal feedback. Students can also download their reflections when the activity uses PDF mode.
+Scratchpad is a focused reflection activity for Moodle 5.2. Teachers pose a question, each student maintains an individual response, and teachers can review, grade, and provide personal feedback. Students can also download their reflections when the activity uses PDF mode.
 
 ## Features
 
@@ -14,7 +14,7 @@ Scratchpad is a focused reflection activity for Moodle 4.5. Teachers pose a ques
 
 ## Screenshots
 
-The screenshots below use fictional users and demonstration content from a Moodle 4.5 test course.
+The screenshots below use fictional users and demonstration content from a Moodle 5.2 test course.
 
 ### A simple learner reflection workflow
 
@@ -48,10 +48,10 @@ The activity overview gives teachers direct access to all submitted Scratchpad e
 
 ## Requirements
 
-- Moodle 4.5.x.
-- PHP and database versions supported by Moodle 4.5.
+- Moodle 5.2.x.
+- PHP and database versions supported by Moodle 5.2.
 
-This `MOODLE_405_STABLE` branch supports Moodle 4.5 only.
+This `MOODLE_502_STABLE` branch supports Moodle 5.2 only.
 
 ## Installation
 

@@ -17,9 +17,8 @@
 namespace mod_scratchpad;
 
 use mod_scratchpad\task\send_feedback_notifications;
+use PHPUnit\Framework\Attributes\CoversClass;
 
-// Moodle 3.4 supports PHP 7.0, where the void return type is unavailable.
-// phpcs:disable moodle.PHPUnit.TestReturnType.MissingReturnType
 /**
  * Tests for the feedback notification scheduled task.
  *
@@ -27,13 +26,13 @@ use mod_scratchpad\task\send_feedback_notifications;
  * @category   test
  * @copyright  2026 Pukunui Malaysia
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \mod_scratchpad\task\send_feedback_notifications
  */
+#[CoversClass(send_feedback_notifications::class)]
 final class send_feedback_notifications_test extends \advanced_testcase {
     /**
      * The task is installed and has a translated name.
      */
-    public function test_task_is_registered() {
+    public function test_task_is_registered(): void {
         $task = \core\task\manager::get_scheduled_task(send_feedback_notifications::class);
 
         $this->assertInstanceOf(send_feedback_notifications::class, $task);
@@ -46,7 +45,7 @@ final class send_feedback_notifications_test extends \advanced_testcase {
     /**
      * Feedback inside the editing window remains queued.
      */
-    public function test_execute_defers_recent_feedback() {
+    public function test_execute_defers_recent_feedback(): void {
         global $CFG, $DB;
 
         $this->resetAfterTest();
@@ -64,7 +63,7 @@ final class send_feedback_notifications_test extends \advanced_testcase {
     /**
      * Eligible feedback is sent and is not sent again.
      */
-    public function test_execute_sends_feedback_once() {
+    public function test_execute_sends_feedback_once(): void {
         global $CFG, $DB;
 
         $this->resetAfterTest();
@@ -90,7 +89,7 @@ final class send_feedback_notifications_test extends \advanced_testcase {
      * @param int $timemarked Time at which feedback was saved.
      * @return \stdClass
      */
-    private function create_graded_entry($timemarked) {
+    private function create_graded_entry(int $timemarked): \stdClass {
         global $DB;
 
         $generator = $this->getDataGenerator();
@@ -118,4 +117,3 @@ final class send_feedback_notifications_test extends \advanced_testcase {
         return $entry;
     }
 }
-// phpcs:enable moodle.PHPUnit.TestReturnType.MissingReturnType

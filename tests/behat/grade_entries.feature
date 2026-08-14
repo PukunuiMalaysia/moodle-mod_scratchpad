@@ -43,10 +43,10 @@ Feature: Teacher can view, comment and grade students entries
     And I am on "Course1" course homepage
 
   Scenario: Teacher can access students entries from the scratchpads list page
-    When I turn editing mode on
-    And I add the "Activities" block
-    And I click on "Scratchpads" "link" in the "Activities" "block"
-    Then I should see "Scratchpad question" in the "Test scratchpad name" "table_row"
+    When I am on the "Course1" "course > activities > scratchpad" page
+    Then I should see "Scratchpad information not available."
+    And I follow "Scratchpad overview"
+    And I should see "Scratchpad question" in the "Test scratchpad name" "table_row"
     And I should see "View 2 scratchpad entries" in the "Test scratchpad name" "table_row"
     And I follow "View 2 scratchpad entries"
 

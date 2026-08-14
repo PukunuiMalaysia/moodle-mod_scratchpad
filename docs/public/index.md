@@ -6,7 +6,7 @@ title: Scratchpad activity
 
 Scratchpad gives Moodle learners a private place to respond to a focused reflection prompt. Teachers can review every submitted entry, award a grade, and provide individual feedback without leaving the activity.
 
-The plugin supports Moodle 4.5 on the `MOODLE_405_STABLE` branch.
+The plugin supports Moodle 5.2 on the `MOODLE_502_STABLE` branch.
 
 ## What Scratchpad provides
 
