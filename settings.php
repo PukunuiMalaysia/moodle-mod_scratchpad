@@ -28,12 +28,19 @@
 defined('MOODLE_INTERNAL') || die();
 
 if ($ADMIN->fulltree) {
+    $settings->add(new admin_setting_configselect(
+        'scratchpad/showrecentactivity',
+        get_string('showrecentactivity', 'scratchpad'),
+        get_string('showrecentactivity', 'scratchpad'),
+        0,
+        ['0' => get_string('no'), '1' => get_string('yes')]
+    ));
 
-    $settings->add(new admin_setting_configselect('scratchpad/showrecentactivity', get_string('showrecentactivity', 'scratchpad'),
-                                                  get_string('showrecentactivity', 'scratchpad'), 0,
-                                                  array('0' => get_string('no'), '1' => get_string('yes'))));
-
-    $settings->add(new admin_setting_configselect('scratchpad/overview', get_string('showoverview', 'scratchpad'),
-                                                  get_string('showoverview', 'scratchpad'), 1,
-                                                  array('0' => get_string('no'), '1' => get_string('yes'))));
+    $settings->add(new admin_setting_configselect(
+        'scratchpad/overview',
+        get_string('showoverview', 'scratchpad'),
+        get_string('showoverview', 'scratchpad'),
+        1,
+        ['0' => get_string('no'), '1' => get_string('yes')]
+    ));
 }

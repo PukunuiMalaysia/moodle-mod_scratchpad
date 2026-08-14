@@ -25,24 +25,26 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/lib/formslib.php');
+require_once($CFG->dirroot . '/lib/formslib.php');
 
+/**
+ * Form for creating or editing a scratchpad entry.
+ */
 class mod_scratchpad_entry_form extends moodleform {
-
+    /**
+     * Defines the entry form.
+     */
     public function definition() {
-        // $this->_form->addElement('editor', 'text_editor', get_string('entry', 'mod_scratchpad'),
-        //         null, $this->_customdata['editoroptions']);
-        // $this->_form->setType('text_editor', PARAM_RAW);
-        // $this->_form->addRule('text_editor', null, 'required', null, 'client');
-        $this->_form->addElement('textarea', 'text_editor', get_string('entry', 'mod_scratchpad'), 'wrap="virtual" rows="20" cols="50"');
+        $this->_form->addElement(
+            'textarea',
+            'text_editor',
+            get_string('entry', 'mod_scratchpad'),
+            'wrap="virtual" rows="20" cols="50"'
+        );
         $this->_form->addRule('text_editor', null, 'required');
         $this->_form->addElement('hidden', 'id');
         $this->_form->setType('id', PARAM_INT);
 
         $this->add_action_buttons();
-    }
-
-    function validation($data, $files) {
-        return array();
     }
 }

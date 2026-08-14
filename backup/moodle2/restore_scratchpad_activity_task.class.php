@@ -25,41 +25,63 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/mod/scratchpad/backup/moodle2/restore_scratchpad_stepslib.php');
+require_once($CFG->dirroot . '/mod/scratchpad/backup/moodle2/restore_scratchpad_stepslib.php');
 
+/**
+ * Defines the restore task for a scratchpad activity.
+ */
 class restore_scratchpad_activity_task extends restore_activity_task {
-
+    /**
+     * Defines activity-specific restore settings.
+     */
     protected function define_my_settings() {
     }
 
+    /**
+     * Defines activity-specific restore steps.
+     */
     protected function define_my_steps() {
         $this->add_step(new restore_scratchpad_activity_structure_step('scratchpad_structure', 'scratchpad.xml'));
     }
 
-    static public function define_decode_contents() {
+    /**
+     * Defines content fields that require link decoding.
+     *
+     * @return restore_decode_content[] Content definitions.
+     */
+    public static function define_decode_contents() {
 
-        $contents = array();
-        $contents[] = new restore_decode_content('scratchpad', array('intro'), 'scratchpad');
-        $contents[] = new restore_decode_content('scratchpad_entries', array('text', 'entrycomment'), 'scratchpad_entry');
+        $contents = [];
+        $contents[] = new restore_decode_content('scratchpad', ['intro'], 'scratchpad');
+        $contents[] = new restore_decode_content('scratchpad_entries', ['text', 'entrycomment'], 'scratchpad_entry');
 
         return $contents;
     }
 
-    static public function define_decode_rules() {
+    /**
+     * Defines link decoding rules.
+     *
+     * @return restore_decode_rule[] Decode rules.
+     */
+    public static function define_decode_rules() {
 
-        $rules = array();
+        $rules = [];
         $rules[] = new restore_decode_rule('SCRATCHPADINDEX', '/mod/scratchpad/index.php?id=$1', 'course');
         $rules[] = new restore_decode_rule('SCRATCHPADVIEWBYID', '/mod/scratchpad/view.php?id=$1', 'course_module');
         $rules[] = new restore_decode_rule('SCRATCHPADREPORT', '/mod/scratchpad/report.php?id=$1', 'course_module');
         $rules[] = new restore_decode_rule('SCRATCHPADEDIT', '/mod/scratchpad/edit.php?id=$1', 'course_module');
 
         return $rules;
-
     }
 
+    /**
+     * Defines activity log restore rules.
+     *
+     * @return restore_log_rule[] Log restore rules.
+     */
     public static function define_restore_log_rules() {
 
-        $rules = array();
+        $rules = [];
         $rules[] = new restore_log_rule('scratchpad', 'view', 'view.php?id={course_module}', '{scratchpad}');
         $rules[] = new restore_log_rule('scratchpad', 'view responses', 'report.php?id={course_module}', '{scratchpad}');
         $rules[] = new restore_log_rule('scratchpad', 'add entry', 'edit.php?id={course_module}', '{scratchpad}');
@@ -69,9 +91,14 @@ class restore_scratchpad_activity_task extends restore_activity_task {
         return $rules;
     }
 
+    /**
+     * Defines course-level log restore rules.
+     *
+     * @return restore_log_rule[] Log restore rules.
+     */
     public static function define_restore_log_rules_for_course() {
 
-        $rules = array();
+        $rules = [];
         $rules[] = new restore_log_rule('scratchpad', 'view all', 'index.php?id={course}', null);
 
         return $rules;

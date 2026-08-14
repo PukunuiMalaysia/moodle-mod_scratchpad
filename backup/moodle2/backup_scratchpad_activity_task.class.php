@@ -25,32 +25,46 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/mod/scratchpad/backup/moodle2/backup_scratchpad_stepslib.php');
+require_once($CFG->dirroot . '/mod/scratchpad/backup/moodle2/backup_scratchpad_stepslib.php');
 
+/**
+ * Defines the backup task for a scratchpad activity.
+ */
 class backup_scratchpad_activity_task extends backup_activity_task {
-
+    /**
+     * Defines activity-specific backup settings.
+     */
     protected function define_my_settings() {
     }
 
+    /**
+     * Defines activity-specific backup steps.
+     */
     protected function define_my_steps() {
         $this->add_step(new backup_scratchpad_activity_structure_step('scratchpad_structure', 'scratchpad.xml'));
     }
 
-    static public function encode_content_links($content) {
+    /**
+     * Encodes links to scratchpad pages in backed-up content.
+     *
+     * @param string $content Content to encode.
+     * @return string Encoded content.
+     */
+    public static function encode_content_links($content) {
         global $CFG;
 
-        $base = preg_quote($CFG->wwwroot.'/mod/scratchpad', '#');
+        $base = preg_quote($CFG->wwwroot . '/mod/scratchpad', '#');
 
-        $pattern = "#(".$base."\/index.php\?id\=)([0-9]+)#";
+        $pattern = "#(" . $base . "\/index.php\?id\=)([0-9]+)#";
         $content = preg_replace($pattern, '$@SCRATCHPADINDEX*$2@$', $content);
 
-        $pattern = "#(".$base."\/view.php\?id\=)([0-9]+)#";
+        $pattern = "#(" . $base . "\/view.php\?id\=)([0-9]+)#";
         $content = preg_replace($pattern, '$@SCRATCHPADVIEWBYID*$2@$', $content);
 
-        $pattern = "#(".$base."\/report.php\?id\=)([0-9]+)#";
+        $pattern = "#(" . $base . "\/report.php\?id\=)([0-9]+)#";
         $content = preg_replace($pattern, '$@SCRATCHPADREPORT*$2@$', $content);
 
-        $pattern = "#(".$base."\/edit.php\?id\=)([0-9]+)#";
+        $pattern = "#(" . $base . "\/edit.php\?id\=)([0-9]+)#";
         $content = preg_replace($pattern, '$@SCRATCHPADEDIT*$2@$', $content);
 
         return $content;

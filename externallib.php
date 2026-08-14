@@ -25,104 +25,145 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once("$CFG->libdir/externallib.php");
+require_once($CFG->libdir . '/externallib.php');
 
+/**
+ * External service implementation for scratchpad entries.
+ */
 class mod_scratchpad_external extends external_api {
-
+    /**
+     * Describes parameters for get_entry().
+     *
+     * @return external_function_parameters
+     */
     public static function get_entry_parameters() {
         return new external_function_parameters(
-            array(
-                'scratchpadid' => new external_value(PARAM_INT, 'id of scratchpad')
-            )
+            [
+                'scratchpadid' => new external_value(PARAM_INT, 'Scratchpad course module ID'),
+            ]
         );
     }
 
+    /**
+     * Describes the return value for get_entry().
+     *
+     * @return external_single_structure
+     */
     public static function get_entry_returns() {
         return new external_single_structure(
-            array(
+            [
                 'text' => new external_value(PARAM_RAW, 'scratchpad text'),
                 'modified' => new external_value(PARAM_INT, 'last modified time'),
                 'rating' => new external_value(PARAM_FLOAT, 'teacher rating'),
                 'comment' => new external_value(PARAM_RAW, 'teacher comment'),
-                'teacher' => new external_value(PARAM_INT, 'id of teacher')
-            )
+                'teacher' => new external_value(PARAM_INT, 'id of teacher'),
+            ]
         );
     }
 
+    /**
+     * Returns the current user's entry for a scratchpad.
+     *
+     * @param int $scratchpadid Scratchpad course module ID.
+     * @return array Entry data.
+     */
     public static function get_entry($scratchpadid) {
         global $DB, $USER;
 
-        $params = self::validate_parameters(self::get_entry_parameters(), array('scratchpadid' => $scratchpadid));
+        $params = self::validate_parameters(self::get_entry_parameters(), ['scratchpadid' => $scratchpadid]);
 
-        if (! $cm = get_coursemodule_from_id('scratchpad', $params['scratchpadid'])) {
+        if (!$cm = get_coursemodule_from_id('scratchpad', $params['scratchpadid'])) {
             throw new invalid_parameter_exception('Course Module ID was incorrect');
         }
 
-        if (! $course = $DB->get_record("course", array('id' => $cm->course))) {
-            throw new invalid_parameter_exception("Course is misconfigured");
+        if (!$course = $DB->get_record('course', ['id' => $cm->course])) {
+            throw new invalid_parameter_exception('Course is misconfigured');
         }
 
-        if (! $scratchpad = $DB->get_record("scratchpad", array("id" => $cm->instance))) {
-            throw new invalid_parameter_exception("Course module is incorrect");
+        if (!$scratchpad = $DB->get_record('scratchpad', ['id' => $cm->instance])) {
+            throw new invalid_parameter_exception('Course module is incorrect');
         }
 
         $context = context_module::instance($cm->id);
-        self::validate_context($context);;
+        self::validate_context($context);
         require_capability('mod/scratchpad:addentries', $context);
 
-        if ($entry = $DB->get_record('scratchpad_entries', array('userid' => $USER->id, 'scratchpad' => $scratchpad->id))) {
-            return array(
+        if ($entry = $DB->get_record('scratchpad_entries', ['userid' => $USER->id, 'scratchpad' => $scratchpad->id])) {
+            return [
                 'text' => $entry->text,
                 'modified' => $entry->modified,
                 'rating' => $entry->rating,
                 'comment' => $entry->entrycomment,
-                'teacher' => $entry->teacher
-            );
+                'teacher' => $entry->teacher,
+            ];
         } else {
-            return "";
+            return [
+                'text' => '',
+                'modified' => 0,
+                'rating' => 0,
+                'comment' => '',
+                'teacher' => 0,
+            ];
         }
     }
 
-
+    /**
+     * Describes parameters for set_text().
+     *
+     * @return external_function_parameters
+     */
     public static function set_text_parameters() {
         return new external_function_parameters(
-            array(
-                'scratchpadid' => new external_value(PARAM_INT, 'id of scratchpad'),
-                'text' => new external_value(PARAM_RAW, 'text to set'),
-                'format' => new external_value(PARAM_INT, 'format of text')
-            )
+            [
+                'scratchpadid' => new external_value(PARAM_INT, 'Scratchpad course module ID'),
+                'text' => new external_value(PARAM_RAW, 'Entry text'),
+                'format' => new external_value(PARAM_INT, 'Entry text format'),
+            ]
         );
     }
 
+    /**
+     * Describes the return value for set_text().
+     *
+     * @return external_value
+     */
     public static function set_text_returns() {
         return new external_value(PARAM_RAW, 'new text');
     }
 
+    /**
+     * Saves the current user's scratchpad entry text.
+     *
+     * @param int $scratchpadid Scratchpad course module ID.
+     * @param string $text Entry text.
+     * @param int $format Entry text format.
+     * @return string Saved text.
+     */
     public static function set_text($scratchpadid, $text, $format) {
         global $DB, $USER;
 
         $params = self::validate_parameters(
             self::set_text_parameters(),
-            array('scratchpadid' => $scratchpadid, 'text' => $text, 'format' => $format)
+            ['scratchpadid' => $scratchpadid, 'text' => $text, 'format' => $format]
         );
 
-        if (! $cm = get_coursemodule_from_id('scratchpad', $params['scratchpadid'])) {
+        if (!$cm = get_coursemodule_from_id('scratchpad', $params['scratchpadid'])) {
             throw new invalid_parameter_exception('Course Module ID was incorrect');
         }
 
-        if (! $course = $DB->get_record("course", array('id' => $cm->course))) {
-            throw new invalid_parameter_exception("Course is misconfigured");
+        if (!$course = $DB->get_record('course', ['id' => $cm->course])) {
+            throw new invalid_parameter_exception('Course is misconfigured');
         }
 
-        if (! $scratchpad = $DB->get_record("scratchpad", array("id" => $cm->instance))) {
-            throw new invalid_parameter_exception("Course module is incorrect");
+        if (!$scratchpad = $DB->get_record('scratchpad', ['id' => $cm->instance])) {
+            throw new invalid_parameter_exception('Course module is incorrect');
         }
 
         $context = context_module::instance($cm->id);
-        self::validate_context($context);;
+        self::validate_context($context);
         require_capability('mod/scratchpad:addentries', $context);
 
-        $entry = $DB->get_record('scratchpad_entries', array('userid' => $USER->id, 'scratchpad' => $scratchpad->id));
+        $entry = $DB->get_record('scratchpad_entries', ['userid' => $USER->id, 'scratchpad' => $scratchpad->id]);
 
         $timenow = time();
         $newentry = new stdClass();
@@ -132,26 +173,25 @@ class mod_scratchpad_external extends external_api {
 
         if ($entry) {
             $newentry->id = $entry->id;
-            $DB->update_record("scratchpad_entries", $newentry);
+            $DB->update_record('scratchpad_entries', $newentry);
         } else {
             $newentry->userid = $USER->id;
             $newentry->scratchpad = $scratchpad->id;
-            $newentry->id = $DB->insert_record("scratchpad_entries", $newentry);
+            $newentry->id = $DB->insert_record('scratchpad_entries', $newentry);
         }
 
         if ($entry) {
             // Trigger module entry updated event.
-            $event = \mod_scratchpad\event\entry_updated::create(array(
+            $event = \mod_scratchpad\event\entry_updated::create([
                 'objectid' => $scratchpad->id,
-                'context' => $context
-            ));
+                'context' => $context,
+            ]);
         } else {
             // Trigger module entry created event.
-            $event = \mod_scratchpad\event\entry_created::create(array(
+            $event = \mod_scratchpad\event\entry_created::create([
                 'objectid' => $scratchpad->id,
-                'context' => $context
-            ));
-
+                'context' => $context,
+            ]);
         }
         $event->add_record_snapshot('course_modules', $cm);
         $event->add_record_snapshot('course', $course);

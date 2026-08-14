@@ -7,3 +7,7 @@ on:
 jobs:
   moodle-plugin-ci:
     uses: PukunuiMalaysia/moodle-plugin-ci/.github/workflows/ci.yml@main
+    with:
+      moodle-branch: '["MOODLE_405_STABLE"]'
+      php-versions: '["8.1", "8.2", "8.3"]'
+      run-grunt: false

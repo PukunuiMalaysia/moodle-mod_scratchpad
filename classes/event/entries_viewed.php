@@ -26,7 +26,6 @@
  */
 
 namespace mod_scratchpad\event;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * The mod_scratchpad entries viewed event class.
@@ -37,7 +36,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class entries_viewed extends \core\event\base {
-
     /**
      * Init method.
      */
@@ -71,16 +69,6 @@ class entries_viewed extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/scratchpad/report.php', array('id' => $this->contextinstanceid));
-    }
-
-    /**
-     * replace add_to_log() statement.
-     *
-     * @return array of parameters to be passed to legacy add_to_log() function.
-     */
-    protected function get_legacy_logdata() {
-        $url = new \moodle_url('report.php', array('id' => $this->contextinstanceid));
-        return array($this->courseid, 'scratchpad', 'report', $url->out(), $this->objectid, $this->contextinstanceid);
+        return new \moodle_url('/mod/scratchpad/report.php', ['id' => $this->contextinstanceid]);
     }
 }

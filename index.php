@@ -23,14 +23,14 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
 
-require_once(__DIR__ . "/../../config.php");
-require_once("lib.php");
+require_once(__DIR__ . '/../../config.php');
+require_once('lib.php');
 
 
 $id = required_param('id', PARAM_INT);   // Course.
 
-if (! $course = $DB->get_record("course", array("id" => $id))) {
-    print_error("Course ID is incorrect");
+if (!$course = $DB->get_record('course', ['id' => $id])) {
+    throw new moodle_exception('invalidcourse', 'mod_scratchpad');
 }
 
 require_course_login($course);
@@ -39,7 +39,7 @@ require_course_login($course);
 // Header.
 $strscratchpads = get_string("modulenameplural", "scratchpad");
 $PAGE->set_pagelayout('incourse');
-$PAGE->set_url('/mod/scratchpad/index.php', array('id' => $id));
+$PAGE->set_url('/mod/scratchpad/index.php', ['id' => $id]);
 $PAGE->navbar->add($strscratchpads);
 $PAGE->set_title($strscratchpads);
 $PAGE->set_heading($course->fullname);
@@ -47,8 +47,11 @@ $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 echo $OUTPUT->heading($strscratchpads);
 
-if (! $scratchpads = get_all_instances_in_course("scratchpad", $course)) {
-    notice(get_string('thereareno', 'moodle', get_string("modulenameplural", "scratchpad")), "../../course/view.php?id=$course->id");
+if (!$scratchpads = get_all_instances_in_course('scratchpad', $course)) {
+    notice(
+        get_string('thereareno', 'moodle', get_string('modulenameplural', 'scratchpad')),
+        "../../course/view.php?id=$course->id"
+    );
     die;
 }
 
@@ -65,10 +68,10 @@ $timenow = time();
 // Table data.
 $table = new html_table();
 
-$table->head = array();
-$table->align = array();
+$table->head = [];
+$table->align = [];
 if ($usesections) {
-    $table->head[] = get_string('sectionname', 'format_'.$course->format);
+    $table->head[] = get_string('sectionname', 'format_' . $course->format);
     $table->align[] = 'center';
 }
 
@@ -80,7 +83,6 @@ $table->align[] = 'left';
 $currentsection = '';
 $i = 0;
 foreach ($scratchpads as $scratchpad) {
-
     $context = context_module::instance($scratchpad->coursemodule);
     $entriesmanager = has_capability('mod/scratchpad:manageentries', $context);
 
@@ -101,21 +103,20 @@ foreach ($scratchpads as $scratchpad) {
     }
 
     // Link.
-    $scratchpadname = format_string($scratchpad->name, true, array('context' => $context));
+    $scratchpadname = format_string($scratchpad->name, true, ['context' => $context]);
     if (!$scratchpad->visible) {
         // Show dimmed if the mod is hidden.
-        $table->data[$i][] = "<a class=\"dimmed\" href=\"view.php?id=$scratchpad->coursemodule\">".$scratchpadname."</a>";
+        $table->data[$i][] = "<a class=\"dimmed\" href=\"view.php?id=$scratchpad->coursemodule\">" . $scratchpadname . "</a>";
     } else {
         // Show normal if the mod is visible.
-        $table->data[$i][] = "<a href=\"view.php?id=$scratchpad->coursemodule\">".$scratchpadname."</a>";
+        $table->data[$i][] = "<a href=\"view.php?id=$scratchpad->coursemodule\">" . $scratchpadname . "</a>";
     }
 
     // Description.
-    $table->data[$i][] = format_text($scratchpad->intro,  $scratchpad->introformat, array('context' => $context));
+    $table->data[$i][] = format_text($scratchpad->intro, $scratchpad->introformat, ['context' => $context]);
 
     // Entries info.
     if ($entriesmanager) {
-
         // Display the report.php col only if is a entries manager in some CONTEXT_MODULE.
         if (empty($managersomewhere)) {
             $table->head[] = get_string('viewentries', 'scratchpad');
@@ -132,8 +133,8 @@ foreach ($scratchpads as $scratchpad) {
         }
 
         $entrycount = scratchpad_count_entries($scratchpad, groups_get_all_groups($course->id, $USER->id));
-        $table->data[$i][] = "<a href=\"report.php?id=$scratchpad->coursemodule\">".
-            get_string("viewallentries", "scratchpad", $entrycount)."</a>";
+        $table->data[$i][] = "<a href=\"report.php?id=$scratchpad->coursemodule\">" .
+            get_string("viewallentries", "scratchpad", $entrycount) . "</a>";
     } else if (!empty($managersomewhere)) {
         $table->data[$i][] = "";
     }
@@ -146,9 +147,9 @@ echo "<br />";
 echo html_writer::table($table);
 
 // Trigger course module instance list event.
-$params = array(
-    'context' => context_course::instance($course->id)
-);
+$params = [
+    'context' => context_course::instance($course->id),
+];
 $event = \mod_scratchpad\event\course_module_instance_list_viewed::create($params);
 $event->add_record_snapshot('course', $course);
 $event->trigger();

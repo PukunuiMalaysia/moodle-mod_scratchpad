@@ -19,7 +19,7 @@
  *
  * @package    mod_scratchpad
  * @copyright  2018 Frédéric Massart
- * @author     Frédéric Massart <fred@branchup.tech>  
+ * @author     Frédéric Massart <fred@branchup.tech>
  * @author     Vinny Stocker <vinny@pukunui.com>
  * @copyright  2021 Tengku Alauddin - din@pukunui.net
  * @copyright  2026 Pukunui Malaysia
@@ -27,6 +27,7 @@
  */
 
 namespace mod_scratchpad\privacy;
+
 defined('MOODLE_INTERNAL') || die();
 
 use context;
@@ -43,21 +44,23 @@ use core_privacy\local\request\writer;
 
 require_once($CFG->dirroot . '/mod/scratchpad/lib.php');
 
+/**
+ * Privacy API provider for scratchpad user data.
+ */
 class provider implements
     \core_privacy\local\metadata\provider,
     \core_privacy\local\request\core_userlist_provider,
     \core_privacy\local\request\plugin\provider {
-
     /**
      * Returns metadata.
      *
      * @param collection $collection The initialised collection to add items to.
      * @return collection A listing of user data stored through this system.
      */
-    public static function get_metadata(collection $collection) : collection {
+    public static function get_metadata(collection $collection): collection {
         $collection->add_database_table(
             'scratchpad_entries',
-             [
+            [
                 'userid' => 'privacy:metadata:scratchpad_entries:userid',
                 'modified' => 'privacy:metadata:scratchpad_entries:modified',
                 'text' => 'privacy:metadata:scratchpad_entries:text',
@@ -76,7 +79,7 @@ class provider implements
      * @param int $userid The user to search.
      * @return contextlist $contextlist The contextlist containing the list of contexts used in this plugin.
      */
-    public static function get_contexts_for_userid(int $userid) : contextlist {
+    public static function get_contexts_for_userid(int $userid): contextlist {
 
         $sql = "
             SELECT DISTINCT ctx.id
@@ -142,7 +145,7 @@ class provider implements
 
         $user = $contextlist->get_user();
         $userid = $user->id;
-        list($contextsql, $contextparams) = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
+        [$contextsql, $contextparams] = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
 
         $sql = "SELECT
                     jen.id,
@@ -167,7 +170,7 @@ class provider implements
         // Fetch the individual scratchpads entries.
         $scratchpads = $DB->get_recordset_sql($sql, $params);
         foreach ($scratchpads as $scratchpad) {
-            list($course, $cm) = get_course_and_cm_from_cmid($scratchpad->cmid, 'scratchpad');
+            [$course, $cm] = get_course_and_cm_from_cmid($scratchpad->cmid, 'scratchpad');
             $scratchpadobj = new \entry($scratchpad, $cm, $course);
             $context = $scratchpadobj->get_context();
 
@@ -221,7 +224,7 @@ class provider implements
         // Delete scratchpad entries.
         $completedtmpids = $DB->get_fieldset_sql(sprintf($completedsql, 'scratchpad_entries'), $completedparams);
         if (!empty($completedtmpids)) {
-            list($insql, $inparams) = $DB->get_in_or_equal($completedtmpids, SQL_PARAMS_NAMED);
+            [$insql, $inparams] = $DB->get_in_or_equal($completedtmpids, SQL_PARAMS_NAMED);
             $DB->delete_records_select('scratchpad_entries', "id $insql", $inparams);
         }
     }
@@ -236,14 +239,14 @@ class provider implements
         $userid = $contextlist->get_user()->id;
 
         // Ensure that we only act on module contexts.
-        $contextids = array_map(function($context) {
+        $contextids = array_map(function ($context) {
             return $context->instanceid;
-        }, array_filter($contextlist->get_contexts(), function($context) {
+        }, array_filter($contextlist->get_contexts(), function ($context) {
             return $context->contextlevel == CONTEXT_MODULE;
         }));
 
         // Prepare SQL to gather all completed IDs.
-        list($insql, $inparams) = $DB->get_in_or_equal($contextids, SQL_PARAMS_NAMED);
+        [$insql, $inparams] = $DB->get_in_or_equal($contextids, SQL_PARAMS_NAMED);
         $completedsql = "
             SELECT fc.id
               FROM {%s} fc
@@ -259,7 +262,7 @@ class provider implements
         // Delete scratchpad entries.
         $completedtmpids = $DB->get_fieldset_sql(sprintf($completedsql, 'scratchpad_entries'), $completedparams);
         if (!empty($completedtmpids)) {
-            list($insql, $inparams) = $DB->get_in_or_equal($completedtmpids, SQL_PARAMS_NAMED);
+            [$insql, $inparams] = $DB->get_in_or_equal($completedtmpids, SQL_PARAMS_NAMED);
             $DB->delete_records_select('scratchpad_entries', "id $insql", $inparams);
         }
     }
@@ -276,7 +279,7 @@ class provider implements
         $userids = $userlist->get_userids();
 
         // Prepare SQL to gather all completed IDs.
-        list($insql, $inparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
+        [$insql, $inparams] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
         $completedsql = "
             SELECT fc.id
               FROM {%s} fc
@@ -292,7 +295,7 @@ class provider implements
         // Delete all scratchpad entries.
         $completedtmpids = $DB->get_fieldset_sql(sprintf($completedsql, 'scratchpad_entries'), $completedparams);
         if (!empty($completedtmpids)) {
-            list($insql, $inparams) = $DB->get_in_or_equal($completedtmpids, SQL_PARAMS_NAMED);
+            [$insql, $inparams] = $DB->get_in_or_equal($completedtmpids, SQL_PARAMS_NAMED);
             $DB->delete_records_select('scratchpad_entries', "id $insql", $inparams);
         }
     }

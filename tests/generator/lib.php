@@ -23,8 +23,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * mod_scratchpad data generator class.
  *
@@ -34,7 +32,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_scratchpad_generator extends testing_module_generator {
-
     /**
      * @var int keep track of how many scratchpads have been created.
      */
@@ -49,10 +46,15 @@ class mod_scratchpad_generator extends testing_module_generator {
         $this->scratchpadcount = 0;
         parent::reset();
     }
-
-
-    public function create_instance($record = null, array $options = null) {
-        $record = (object)(array)$record;
+    /**
+     * Creates a scratchpad activity instance.
+     *
+     * @param stdClass|array|null $record Activity data.
+     * @param array|null $options Generator options.
+     * @return stdClass Created activity record.
+     */
+    public function create_instance($record = null, ?array $options = null) {
+        $record = (object) (array) $record;
 
         if (!isset($record->name)) {
             $record->name = 'Test scratchpad name ' . $this->scratchpadcount;
@@ -71,5 +73,4 @@ class mod_scratchpad_generator extends testing_module_generator {
 
         return parent::create_instance($record, (array)$options);
     }
-
 }

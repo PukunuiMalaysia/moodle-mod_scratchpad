@@ -26,9 +26,6 @@
  **/
 
 
-defined('MOODLE_INTERNAL') || die();
-
-
 /**
  * Given an object containing all the necessary data,
  * (defined by the form in mod.html) this function
@@ -82,15 +79,15 @@ function scratchpad_delete_instance($id) {
 
     $result = true;
 
-    if (! $scratchpad = $DB->get_record("scratchpad", array("id" => $id))) {
+    if (! $scratchpad = $DB->get_record("scratchpad", ["id" => $id])) {
         return false;
     }
 
-    if (! $DB->delete_records("scratchpad_entries", array("scratchpad" => $scratchpad->id))) {
+    if (! $DB->delete_records("scratchpad_entries", ["scratchpad" => $scratchpad->id])) {
         $result = false;
     }
 
-    if (! $DB->delete_records("scratchpad", array("id" => $scratchpad->id))) {
+    if (! $DB->delete_records("scratchpad", ["id" => $scratchpad->id])) {
         $result = false;
     }
 
@@ -98,13 +95,19 @@ function scratchpad_delete_instance($id) {
 }
 
 
+/**
+ * Declares the Moodle features supported by the activity.
+ *
+ * @param string $feature Feature constant to check.
+ * @return bool|string|null The support status or activity purpose.
+ */
 function scratchpad_supports($feature) {
     // Activity purposes were introduced in Moodle 4.0.
     if (defined('FEATURE_MOD_PURPOSE') && $feature === FEATURE_MOD_PURPOSE) {
         return MOD_PURPOSE_ASSESSMENT;
     }
 
-    switch($feature) {
+    switch ($feature) {
         case FEATURE_MOD_INTRO:
             return true;
         case FEATURE_GRADE_HAS_GRADE:
@@ -131,22 +134,40 @@ function scratchpad_supports($feature) {
 }
 
 
+/**
+ * Returns legacy log actions that represent viewing activity data.
+ *
+ * @return string[] The view action names.
+ */
 function scratchpad_get_view_actions() {
-    return array('view', 'view all', 'view responses');
+    return ['view', 'view all', 'view responses'];
 }
 
 
+/**
+ * Returns legacy log actions that represent changing activity data.
+ *
+ * @return string[] The post action names.
+ */
 function scratchpad_get_post_actions() {
-    return array('add entry', 'update entry', 'update feedback');
+    return ['add entry', 'update entry', 'update feedback'];
 }
 
 
+/**
+ * Returns a concise summary of a user's activity entry.
+ *
+ * @param stdClass $course Course record.
+ * @param stdClass $user User record.
+ * @param stdClass $mod Course module record.
+ * @param stdClass $scratchpad Activity record.
+ * @return stdClass|null Entry summary, or null when no entry exists.
+ */
 function scratchpad_user_outline($course, $user, $mod, $scratchpad) {
 
     global $DB;
 
-    if ($entry = $DB->get_record("scratchpad_entries", array("userid" => $user->id, "scratchpad" => $scratchpad->id))) {
-
+    if ($entry = $DB->get_record("scratchpad_entries", ["userid" => $user->id, "scratchpad" => $scratchpad->id])) {
         $numwords = count(preg_split("/\w\b/", $entry->text)) - 1;
 
         $result = new stdClass();
@@ -158,16 +179,24 @@ function scratchpad_user_outline($course, $user, $mod, $scratchpad) {
 }
 
 
+/**
+ * Prints a user's complete activity entry.
+ *
+ * @param stdClass $course Course record.
+ * @param stdClass $user User record.
+ * @param stdClass $mod Course module record.
+ * @param stdClass $scratchpad Activity record.
+ * @return void
+ */
 function scratchpad_user_complete($course, $user, $mod, $scratchpad) {
 
     global $DB, $OUTPUT;
 
-    if ($entry = $DB->get_record("scratchpad_entries", array("userid" => $user->id, "scratchpad" => $scratchpad->id))) {
-
+    if ($entry = $DB->get_record("scratchpad_entries", ["userid" => $user->id, "scratchpad" => $scratchpad->id])) {
         echo $OUTPUT->box_start();
 
         if ($entry->modified) {
-            echo "<p><font size=\"1\">".get_string("lastedited").": ".userdate($entry->modified)."</font></p>";
+            echo "<p><font size=\"1\">" . get_string("lastedited") . ": " . userdate($entry->modified) . "</font></p>";
         }
         if ($entry->text) {
             echo scratchpad_format_entry_text($entry, $course, $mod);
@@ -178,7 +207,6 @@ function scratchpad_user_complete($course, $user, $mod, $scratchpad) {
         }
 
         echo $OUTPUT->box_end();
-
     } else {
         print_string("noentry", "scratchpad");
     }
@@ -189,8 +217,6 @@ function scratchpad_user_complete($course, $user, $mod, $scratchpad) {
  * that has occurred in scratchpad activities and print it out.
  * Return true if there was output, or false if there was none.
  *
- * @global stdClass $DB
- * @global stdClass $OUTPUT
  * @param stdClass $course
  * @param bool $viewfullnames
  * @param int $timestart
@@ -203,7 +229,7 @@ function scratchpad_print_recent_activity($course, $viewfullnames, $timestart) {
         return false;
     }
 
-    $dbparams = array($timestart, $course->id, 'scratchpad');
+    $dbparams = [$timestart, $course->id, 'scratchpad'];
     $namefields = user_picture::fields('u', null, 'userid');
     $sql = "SELECT je.id, je.modified, cm.id AS cmid, $namefields
          FROM {scratchpad_entries} je
@@ -220,10 +246,9 @@ function scratchpad_print_recent_activity($course, $viewfullnames, $timestart) {
     $newentries = $DB->get_records_sql($sql, $dbparams);
 
     $modinfo = get_fast_modinfo($course);
-    $show    = array();
+    $show    = [];
 
     foreach ($newentries as $anentry) {
-
         if (!array_key_exists($anentry->cmid, $modinfo->get_cms())) {
             continue;
         }
@@ -245,8 +270,10 @@ function scratchpad_print_recent_activity($course, $viewfullnames, $timestart) {
 
         $groupmode = groups_get_activity_groupmode($cm, $course);
 
-        if ($groupmode == SEPARATEGROUPS &&
-                !has_capability('moodle/site:accessallgroups',  $context)) {
+        if (
+            $groupmode == SEPARATEGROUPS &&
+                !has_capability('moodle/site:accessallgroups', $context)
+        ) {
             if (isguestuser()) {
                 // Shortcut - guest user does not belong into any group.
                 continue;
@@ -272,22 +299,24 @@ function scratchpad_print_recent_activity($course, $viewfullnames, $timestart) {
         return false;
     }
 
-    echo $OUTPUT->heading(get_string('newscratchpadentries', 'scratchpad').':', 3);
+    echo $OUTPUT->heading(get_string('newscratchpadentries', 'scratchpad') . ':', 3);
 
     foreach ($show as $submission) {
         $cm = $modinfo->get_cm($submission->cmid);
         $context = context_module::instance($submission->cmid);
         if (has_capability('mod/scratchpad:manageentries', $context)) {
-            $link = $CFG->wwwroot.'/mod/scratchpad/report.php?id='.$cm->id;
+            $link = $CFG->wwwroot . '/mod/scratchpad/report.php?id=' . $cm->id;
         } else {
-            $link = $CFG->wwwroot.'/mod/scratchpad/view.php?id='.$cm->id;
+            $link = $CFG->wwwroot . '/mod/scratchpad/view.php?id=' . $cm->id;
         }
-        print_recent_activity_note($submission->modified,
-                                   $submission,
-                                   $cm->name,
-                                   $link,
-                                   false,
-                                   $viewfullnames);
+        print_recent_activity_note(
+            $submission->modified,
+            $submission,
+            $cm->name,
+            $link,
+            false,
+            $viewfullnames
+        );
     }
     return true;
 }
@@ -306,13 +335,13 @@ function scratchpad_get_participants($scratchpadid) {
                                       FROM {user} u,
                                       {scratchpad_entries} j
                                       WHERE j.scratchpad=? and
-                                      u.id = j.userid", array($scratchpadid));
+                                      u.id = j.userid", [$scratchpadid]);
     // Get teachers.
     $teachers = $DB->get_records_sql("SELECT DISTINCT u.id
                                       FROM {user} u,
                                       {scratchpad_entries} j
                                       WHERE j.scratchpad=? and
-                                      u.id = j.teacher", array($scratchpadid));
+                                      u.id = j.teacher", [$scratchpadid]);
 
     // Add teachers to students.
     if ($teachers) {
@@ -330,12 +359,12 @@ function scratchpad_get_participants($scratchpadid) {
  * @param int $scaleid Scale ID
  * @return boolean True if a scale is being used by one scratchpad
  */
-function scratchpad_scale_used ($scratchpadid, $scaleid) {
+function scratchpad_scale_used($scratchpadid, $scaleid) {
 
     global $DB;
     $return = false;
 
-    $rec = $DB->get_record("scratchpad", array("id" => $scratchpadid, "grade" => -$scaleid));
+    $rec = $DB->get_record("scratchpad", ["id" => $scratchpadid, "grade" => -$scaleid]);
 
     if (!empty($rec) && !empty($scaleid)) {
         $return = true;
@@ -348,13 +377,13 @@ function scratchpad_scale_used ($scratchpadid, $scaleid) {
  * Checks if scale is being used by any instance of scratchpad
  *
  * This is used to find out if scale used anywhere
- * @param $scaleid int
- * @return boolean True if the scale is used by any scratchpad
+ * @param int $scaleid Scale ID.
+ * @return bool True if the scale is used by any scratchpad.
  */
 function scratchpad_scale_used_anywhere($scaleid) {
     global $DB;
 
-    if ($scaleid and $DB->get_records('scratchpad', array('grade' => -$scaleid))) {
+    if ($scaleid && $DB->get_records('scratchpad', ['grade' => -$scaleid])) {
         return true;
     } else {
         return false;
@@ -379,7 +408,7 @@ function scratchpad_reset_course_form_definition(&$mform) {
  * @return array
  */
 function scratchpad_reset_course_form_defaults($course) {
-    return array('reset_scratchpad' => 1);
+    return ['reset_scratchpad' => 1];
 }
 
 /**
@@ -391,51 +420,55 @@ function scratchpad_reset_userdata($data) {
 
     global $CFG, $DB;
 
-    $status = array();
+    $status = [];
     if (!empty($data->reset_scratchpad)) {
-
         $sql = "SELECT j.id
                 FROM {scratchpad} j
                 WHERE j.course = ?";
-        $params = array($data->courseid);
+        $params = [$data->courseid];
 
         $DB->delete_records_select('scratchpad_entries', "scratchpad IN ($sql)", $params);
 
-        $status[] = array('component' => get_string('modulenameplural', 'scratchpad'),
+        $status[] = ['component' => get_string('modulenameplural', 'scratchpad'),
                           'item' => get_string('removeentries', 'scratchpad'),
-                          'error' => false);
+                          'error' => false];
     }
 
     return $status;
 }
 
+/**
+ * Adds open Scratchpad activities to the course overview output.
+ *
+ * @param array $courses Courses indexed by course ID.
+ * @param array $htmlarray Overview HTML indexed by course and module.
+ * @return void
+ */
 function scratchpad_print_overview($courses, &$htmlarray) {
 
     global $USER, $CFG, $DB;
 
     if (!get_config('scratchpad', 'overview')) {
-        return array();
+        return [];
     }
 
     if (empty($courses) || !is_array($courses) || count($courses) == 0) {
-        return array();
+        return [];
     }
 
     if (!$scratchpads = get_all_instances_in_courses('scratchpad', $courses)) {
-        return array();
+        return [];
     }
 
     $strscratchpad = get_string('modulename', 'scratchpad');
 
     $timenow = time();
     foreach ($scratchpads as $scratchpad) {
-
         if (empty($courses[$scratchpad->course]->format)) {
-            $courses[$scratchpad->course]->format = $DB->get_field('course', 'format', array('id' => $scratchpad->course));
+            $courses[$scratchpad->course]->format = $DB->get_field('course', 'format', ['id' => $scratchpad->course]);
         }
 
-        if ($courses[$scratchpad->course]->format == 'weeks' AND $scratchpad->days) {
-
+        if ($courses[$scratchpad->course]->format == 'weeks' && $scratchpad->days) {
             $coursestartdate = $courses[$scratchpad->course]->startdate;
 
             $scratchpad->timestart  = $coursestartdate + (($scratchpad->section - 1) * 608400);
@@ -445,16 +478,15 @@ function scratchpad_print_overview($courses, &$htmlarray) {
                 $scratchpad->timefinish = 9999999999;
             }
             $scratchpadopen = ($scratchpad->timestart < $timenow && $timenow < $scratchpad->timefinish);
-
         } else {
             $scratchpadopen = true;
         }
 
         if ($scratchpadopen) {
-            $str = '<div class="scratchpad overview"><div class="name">'.
-                   $strscratchpad.': <a '.($scratchpad->visible ? '' : ' class="dimmed"').
-                   ' href="'.$CFG->wwwroot.'/mod/scratchpad/view.php?id='.$scratchpad->coursemodule.'">'.
-                   $scratchpad->name.'</a></div></div>';
+            $str = '<div class="scratchpad overview"><div class="name">' .
+                   $strscratchpad . ': <a ' . ($scratchpad->visible ? '' : ' class="dimmed"') .
+                   ' href="' . $CFG->wwwroot . '/mod/scratchpad/view.php?id=' . $scratchpad->coursemodule . '">' .
+                   $scratchpad->name . '</a></div></div>';
 
             if (empty($htmlarray[$scratchpad->course]['scratchpad'])) {
                 $htmlarray[$scratchpad->course]['scratchpad'] = $str;
@@ -465,10 +497,17 @@ function scratchpad_print_overview($courses, &$htmlarray) {
     }
 }
 
-function scratchpad_get_user_grades($scratchpad, $userid=0) {
+/**
+ * Returns grades for one or all users in an activity.
+ *
+ * @param stdClass $scratchpad Activity record.
+ * @param int $userid User ID, or zero for all users.
+ * @return array|false Grade records, or false when the activity is missing.
+ */
+function scratchpad_get_user_grades($scratchpad, $userid = 0) {
     global $DB;
 
-    $params = array();
+    $params = [];
 
     if ($userid) {
         $userstr = 'AND userid = :uid';
@@ -479,13 +518,11 @@ function scratchpad_get_user_grades($scratchpad, $userid=0) {
 
     if (!$scratchpad) {
         return false;
-
     } else {
-
         $sql = "SELECT userid, modified as datesubmitted, format as feedbackformat,
                 rating as rawgrade, entrycomment as feedback, teacher as usermodifier, timemarked as dategraded
                 FROM {scratchpad_entries}
-                WHERE scratchpad = :jid ".$userstr;
+                WHERE scratchpad = :jid " . $userstr;
         $params['jid'] = $scratchpad->id;
 
         $grades = $DB->get_records_sql($sql, $params);
@@ -503,7 +540,6 @@ function scratchpad_get_user_grades($scratchpad, $userid=0) {
 
         return $grades;
     }
-
 }
 
 
@@ -514,12 +550,12 @@ function scratchpad_get_user_grades($scratchpad, $userid=0) {
  * @param int      $userid       if is false al users
  * @param boolean  $nullifnone   return null if grade does not exist
  */
-function scratchpad_update_grades($scratchpad=null, $userid=0, $nullifnone=true) {
+function scratchpad_update_grades($scratchpad = null, $userid = 0, $nullifnone = true) {
 
     global $CFG, $DB;
 
     if (!function_exists('grade_update')) { // Workaround for buggy PHP versions.
-        require_once($CFG->libdir.'/gradelib.php');
+        require_once($CFG->libdir . '/gradelib.php');
     }
 
     if ($scratchpad != null) {
@@ -555,36 +591,21 @@ function scratchpad_update_grades($scratchpad=null, $userid=0, $nullifnone=true)
 /**
  * Create grade item for given scratchpad
  *
- * @param object $scratchpad object with extra cmidnumber
- * @param mixed optional array/object of grade(s); 'reset' means reset grades in gradebook
- * @return int 0 if ok, error code otherwise
+ * @param stdClass $scratchpad Activity object with an optional cmidnumber property.
+ * @param mixed $grades Optional grade records; 'reset' means reset grades in the gradebook.
+ * @return int Grade update status code.
  */
-function scratchpad_grade_item_update($scratchpad, $grades=null) {
+function scratchpad_grade_item_update($scratchpad, $grades = null) {
     global $CFG;
     if (!function_exists('grade_update')) { // Workaround for buggy PHP versions.
-        require_once($CFG->libdir.'/gradelib.php');
+        require_once($CFG->libdir . '/gradelib.php');
     }
 
     if (property_exists($scratchpad, 'cmidnumber')) {
-        $params = array('itemname' => $scratchpad->name, 'idnumber' => $scratchpad->cmidnumber);
+        $params = ['itemname' => $scratchpad->name, 'idnumber' => $scratchpad->cmidnumber];
     } else {
-        $params = array('itemname' => $scratchpad->name);
+        $params = ['itemname' => $scratchpad->name];
     }
-
-    // if ($scratchpad->grade > 0) {
-        // $params['gradetype']  = GRADE_TYPE_VALUE;
-        // $params['grademax']   = $scratchpad->grade;
-        // $params['grademin']   = 0;
-        // $params['multfactor'] = 1.0;
-
-    // } else if ($scratchpad->grade < 0) {
-        // $params['gradetype'] = GRADE_TYPE_SCALE;
-        // $params['scaleid']   = -$scratchpad->grade;
-
-    // } else {
-        // $params['gradetype']  = GRADE_TYPE_NONE;
-        // $params['multfactor'] = 1.0;
-    // }
 
     if ($grades === 'reset') {
         $params['reset'] = true;
@@ -604,17 +625,24 @@ function scratchpad_grade_item_update($scratchpad, $grades=null) {
 function scratchpad_grade_item_delete($scratchpad) {
     global $CFG;
 
-    require_once($CFG->libdir.'/gradelib.php');
+    require_once($CFG->libdir . '/gradelib.php');
 
-    return grade_update('mod/scratchpad', $scratchpad->course, 'mod', 'scratchpad', $scratchpad->id, 0, null, array('deleted' => 1));
+    return grade_update('mod/scratchpad', $scratchpad->course, 'mod', 'scratchpad', $scratchpad->id, 0, null, ['deleted' => 1]);
 }
 
 
 
+/**
+ * Returns enrolled users who have submitted an entry.
+ *
+ * @param stdClass $scratchpad Activity record.
+ * @param int $currentgroup Group ID, or zero for all groups.
+ * @return array|null User records, or null when none are available.
+ */
 function scratchpad_get_users_done($scratchpad, $currentgroup) {
     global $DB;
 
-    $params = array();
+    $params = [];
 
     $sql = "SELECT u.* FROM {scratchpad_entries} j
             JOIN {user} u ON j.userid = u.id ";
@@ -636,13 +664,12 @@ function scratchpad_get_users_done($scratchpad, $currentgroup) {
 
     // Remove unenrolled participants.
     foreach ($scratchpads as $key => $user) {
-
         $context = context_module::instance($cm->id);
 
         $canadd = has_capability('mod/scratchpad:addentries', $context, $user);
         $entriesmanager = has_capability('mod/scratchpad:manageentries', $context, $user);
 
-        if (!$entriesmanager and !$canadd) {
+        if (!$entriesmanager && !$canadd) {
             unset($scratchpads[$key]);
         }
     }
@@ -651,7 +678,11 @@ function scratchpad_get_users_done($scratchpad, $currentgroup) {
 }
 
 /**
- * Counts all the scratchpad entries (optionally in a given group)
+ * Counts all the scratchpad entries, optionally in a given group.
+ *
+ * @param stdClass $scratchpad Activity record.
+ * @param int $groupid Group ID, or zero for all groups.
+ * @return int Number of entries.
  */
 function scratchpad_count_entries($scratchpad, $groupid = 0) {
     global $DB;
@@ -660,19 +691,16 @@ function scratchpad_count_entries($scratchpad, $groupid = 0) {
     $context = context_module::instance($cm->id);
 
     if ($groupid) {     // How many in a particular group?
-
         $sql = "SELECT DISTINCT u.id FROM {scratchpad_entries} j
                 JOIN {groups_members} g ON g.userid = j.userid
                 JOIN {user} u ON u.id = g.userid
                 WHERE j.scratchpad = ? AND g.groupid = ?";
-        $scratchpads = $DB->get_records_sql($sql, array($scratchpad->id, $groupid));
-
+        $scratchpads = $DB->get_records_sql($sql, [$scratchpad->id, $groupid]);
     } else { // Count all the entries from the whole course.
-
         $sql = "SELECT DISTINCT u.id FROM {scratchpad_entries} j
                 JOIN {user} u ON u.id = j.userid
                 WHERE j.scratchpad = ?";
-        $scratchpads = $DB->get_records_sql($sql, array($scratchpad->id));
+        $scratchpads = $DB->get_records_sql($sql, [$scratchpad->id]);
     }
 
     if (!$scratchpads) {
@@ -684,7 +712,6 @@ function scratchpad_count_entries($scratchpad, $groupid = 0) {
 
     // Remove unenrolled participants.
     foreach ($scratchpads as $userid => $notused) {
-
         if (!isset($entriesmanager[$userid]) && !isset($canadd[$userid])) {
             unset($scratchpads[$userid]);
         }
@@ -693,15 +720,27 @@ function scratchpad_count_entries($scratchpad, $groupid = 0) {
     return count($scratchpads);
 }
 
+/**
+ * Returns graded entries that have not yet been marked as mailed.
+ *
+ * @param int $cutofftime Latest grading timestamp to include.
+ * @return array Entry records.
+ */
 function scratchpad_get_unmailed_graded($cutofftime) {
     global $DB;
 
     $sql = "SELECT je.*, j.course, j.name FROM {scratchpad_entries} je
             JOIN {scratchpad} j ON je.scratchpad = j.id
             WHERE je.mailed = '0' AND je.timemarked < ? AND je.timemarked > 0";
-    return $DB->get_records_sql($sql, array($cutofftime));
+    return $DB->get_records_sql($sql, [$cutofftime]);
 }
 
+/**
+ * Returns activity and user information for a legacy log record.
+ *
+ * @param stdClass $log Legacy log record.
+ * @return stdClass|false Activity information, or false when not found.
+ */
 function scratchpad_log_info($log) {
     global $DB;
 
@@ -710,14 +749,14 @@ function scratchpad_log_info($log) {
             JOIN {scratchpad_entries} je ON je.scratchpad = j.id
             JOIN {user} u ON u.id = je.userid
             WHERE je.id = ?";
-    return $DB->get_record_sql($sql, array($log->info));
+    return $DB->get_record_sql($sql, [$log->info]);
 }
 
 /**
  * Returns the scratchpad instance course_module id
  *
- * @param integer $scratchpad
- * @return object
+ * @param int $scratchpadid Activity instance ID.
+ * @return stdClass|false Course module record, or false when not found.
  */
 function scratchpad_get_coursemodule($scratchpadid) {
 
@@ -725,26 +764,36 @@ function scratchpad_get_coursemodule($scratchpadid) {
 
     return $DB->get_record_sql("SELECT cm.id FROM {course_modules} cm
                                 JOIN {modules} m ON m.id = cm.module
-                                WHERE cm.instance = ? AND m.name = 'scratchpad'", array($scratchpadid));
+                                WHERE cm.instance = ? AND m.name = 'scratchpad'", [$scratchpadid]);
 }
 
 
 
+/**
+ * Prints a user's entry and grading controls.
+ *
+ * @param stdClass $course Course record.
+ * @param stdClass $user User record.
+ * @param stdClass|null $entry Entry record.
+ * @param array $teachers Teacher records indexed by user ID.
+ * @param array $grades Available grade options.
+ * @return void
+ */
 function scratchpad_print_user_entry($course, $user, $entry, $teachers, $grades) {
 
     global $USER, $OUTPUT, $DB, $CFG;
 
-    require_once($CFG->dirroot.'/lib/gradelib.php');
+    require_once($CFG->dirroot . '/lib/gradelib.php');
 
     echo "\n<table class=\"scratchpaduserentry m-b-1\" id=\"entry-" . $user->id . "\">";
 
     echo "\n<tr>";
     echo "\n<td class=\"userpix\" rowspan=\"2\">";
-    echo $OUTPUT->user_picture($user, array('courseid' => $course->id, 'alttext' => true));
+    echo $OUTPUT->user_picture($user, ['courseid' => $course->id, 'alttext' => true]);
     echo "</td>";
-    echo "<td class=\"userfullname\">".fullname($user);
+    echo "<td class=\"userfullname\">" . fullname($user);
     if ($entry) {
-        echo " <span class=\"lastedit\">".get_string("lastedited").": ".userdate($entry->modified)."</span>";
+        echo " <span class=\"lastedit\">" . get_string("lastedited") . ": " . userdate($entry->modified) . "</span>";
     }
     echo "</td>";
     echo "</tr>";
@@ -764,28 +813,30 @@ function scratchpad_print_user_entry($course, $user, $entry, $teachers, $grades)
             $entry->teacher = $USER->id;
         }
         if (empty($teachers[$entry->teacher])) {
-            $teachers[$entry->teacher] = $DB->get_record('user', array('id' => $entry->teacher));
+            $teachers[$entry->teacher] = $DB->get_record('user', ['id' => $entry->teacher]);
         }
-        echo $OUTPUT->user_picture($teachers[$entry->teacher], array('courseid' => $course->id, 'alttext' => true));
+        echo $OUTPUT->user_picture($teachers[$entry->teacher], ['courseid' => $course->id, 'alttext' => true]);
         echo "</td>";
-        echo "<td>".get_string("feedback").":";
+        echo "<td>" . get_string("feedback") . ":";
 
-        $attrs = array();
+        $attrs = [];
         $hiddengradestr = '';
         $gradebookgradestr = '';
         $feedbackdisabledstr = '';
         $feedbacktext = $entry->entrycomment;
 
         // If the grade was modified from the gradebook disable edition also skip if scratchpad is not graded.
-        $gradinginfo = grade_get_grades($course->id, 'mod', 'scratchpad', $entry->scratchpad, array($user->id));
+        $gradinginfo = grade_get_grades($course->id, 'mod', 'scratchpad', $entry->scratchpad, [$user->id]);
         if (!empty($gradinginfo->items[0]->grades[$entry->userid]->str_long_grade)) {
-            if ($gradingdisabled = $gradinginfo->items[0]->grades[$user->id]->locked
-                    || $gradinginfo->items[0]->grades[$user->id]->overridden) {
+            if (
+                $gradingdisabled = $gradinginfo->items[0]->grades[$user->id]->locked
+                    || $gradinginfo->items[0]->grades[$user->id]->overridden
+            ) {
                 $attrs['disabled'] = 'disabled';
-                $hiddengradestr = '<input type="hidden" name="r'.$entry->id.'" value="'.$entry->rating.'"/>';
-                $gradebooklink = '<a href="'.$CFG->wwwroot.'/grade/report/grader/index.php?id='.$course->id.'">';
-                $gradebooklink .= $gradinginfo->items[0]->grades[$user->id]->str_long_grade.'</a>';
-                $gradebookgradestr = '<br/>'.get_string("gradeingradebook", "scratchpad").':&nbsp;'.$gradebooklink;
+                $hiddengradestr = '<input type="hidden" name="r' . $entry->id . '" value="' . $entry->rating . '"/>';
+                $gradebooklink = '<a href="' . $CFG->wwwroot . '/grade/report/grader/index.php?id=' . $course->id . '">';
+                $gradebooklink .= $gradinginfo->items[0]->grades[$user->id]->str_long_grade . '</a>';
+                $gradebookgradestr = '<br/>' . get_string("gradeingradebook", "scratchpad") . ':&nbsp;' . $gradebooklink;
 
                 $feedbackdisabledstr = 'disabled="disabled"';
                 $feedbacktext = $gradinginfo->items[0]->grades[$user->id]->str_feedback;
@@ -794,51 +845,63 @@ function scratchpad_print_user_entry($course, $user, $entry, $teachers, $grades)
 
         // Grade selector.
         $attrs['id'] = 'r' . $entry->id;
-        echo html_writer::label(fullname($user)." ".get_string('grade'), 'r'.$entry->id, true, array('class' => 'accesshide'));
-        echo html_writer::select($grades, 'r'.$entry->id, $entry->rating, get_string("nograde").'...', $attrs);
+        echo html_writer::label(
+            fullname($user) . " " . get_string('grade', 'scratchpad'),
+            'r' . $entry->id,
+            true,
+            ['class' => 'accesshide']
+        );
+        echo html_writer::select($grades, 'r' . $entry->id, $entry->rating, get_string("nograde") . '...', $attrs);
         echo $hiddengradestr;
         // Rewrote next three lines to show entry needs to be regraded due to resubmission.
         if (!empty($entry->timemarked) && $entry->modified > $entry->timemarked) {
-            echo " <span class=\"lastedit\">".get_string("needsregrade", "scratchpad"). "</span>";
+            echo " <span class=\"lastedit\">" . get_string("needsregrade", "scratchpad") . "</span>";
         } else if ($entry->timemarked) {
-            echo " <span class=\"lastedit\">".userdate($entry->timemarked)."</span>";
+            echo " <span class=\"lastedit\">" . userdate($entry->timemarked) . "</span>";
         }
         echo $gradebookgradestr;
 
         // Feedback text.
-        echo html_writer::label(fullname($user)." ".get_string('feedback'), 'c'.$entry->id, true, array('class' => 'accesshide'));
+        echo html_writer::label(fullname($user) . " " . get_string('feedback'), 'c' . $entry->id, true, ['class' => 'accesshide']);
         echo "<p><textarea id=\"c$entry->id\" name=\"c$entry->id\" rows=\"12\" cols=\"60\" $feedbackdisabledstr>";
         p($feedbacktext);
         echo "</textarea></p>";
 
         if ($feedbackdisabledstr != '') {
-            echo '<input type="hidden" name="c'.$entry->id.'" value="'.$feedbacktext.'"/>';
+            echo '<input type="hidden" name="c' . $entry->id . '" value="' . $feedbacktext . '"/>';
         }
         echo "</td></tr>";
     }
     echo "</table>\n";
-
 }
 
+/**
+ * Prints grading feedback for an entry.
+ *
+ * @param stdClass $course Course record.
+ * @param stdClass $entry Entry record.
+ * @param array $grades Available grade options.
+ * @return void
+ */
 function scratchpad_print_feedback($course, $entry, $grades) {
 
     global $CFG, $DB, $OUTPUT;
 
-    require_once($CFG->dirroot.'/lib/gradelib.php');
+    require_once($CFG->dirroot . '/lib/gradelib.php');
 
-    if (! $teacher = $DB->get_record('user', array('id' => $entry->teacher))) {
-        print_error('Weird scratchpad error');
+    if (! $teacher = $DB->get_record('user', ['id' => $entry->teacher])) {
+        throw new moodle_exception('invalidteacher', 'mod_scratchpad');
     }
 
     echo '<table class="feedbackbox">';
 
     echo '<tr>';
     echo '<td class="left picture">';
-    echo $OUTPUT->user_picture($teacher, array('courseid' => $course->id, 'alttext' => true));
+    echo $OUTPUT->user_picture($teacher, ['courseid' => $course->id, 'alttext' => true]);
     echo '</td>';
     echo '<td class="entryheader">';
-    echo '<span class="author">'.fullname($teacher).'</span>';
-    echo '&nbsp;&nbsp;<span class="time">'.userdate($entry->timemarked).'</span>';
+    echo '<span class="author">' . fullname($teacher) . '</span>';
+    echo '&nbsp;&nbsp;<span class="time">' . userdate($entry->timemarked) . '</span>';
     echo '</td>';
     echo '</tr>';
 
@@ -849,9 +912,9 @@ function scratchpad_print_feedback($course, $entry, $grades) {
     echo '<div class="grade">';
 
     // Gradebook preference.
-    $gradinginfo = grade_get_grades($course->id, 'mod', 'scratchpad', $entry->scratchpad, array($entry->userid));
+    $gradinginfo = grade_get_grades($course->id, 'mod', 'scratchpad', $entry->scratchpad, [$entry->userid]);
     if (!empty($gradinginfo->items[0]->grades[$entry->userid]->str_long_grade)) {
-        echo get_string('grade').': ';
+        echo get_string('grade', 'scratchpad') . ': ';
         echo $gradinginfo->items[0]->grades[$entry->userid]->str_long_grade;
     } else {
         print_string('nograde');
@@ -877,7 +940,7 @@ function scratchpad_print_feedback($course, $entry, $grades) {
  * @param array $options additional options affecting the file serving
  * @return bool false if file not found, does not return if found - just send the file
  */
-function scratchpad_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {
+function scratchpad_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
     global $DB, $USER;
 
     if ($context->contextlevel != CONTEXT_MODULE) {
@@ -892,7 +955,7 @@ function scratchpad_pluginfile($course, $cm, $context, $filearea, $args, $forced
 
     // Args[0] should be the entry id.
     $entryid = intval(array_shift($args));
-    $entry = $DB->get_record('scratchpad_entries', array('id' => $entryid), 'id, userid', MUST_EXIST);
+    $entry = $DB->get_record('scratchpad_entries', ['id' => $entryid], 'id, userid', MUST_EXIST);
 
     $canmanage = has_capability('mod/scratchpad:manageentries', $context);
     if (!$canmanage && !has_capability('mod/scratchpad:addentries', $context)) {
@@ -918,6 +981,14 @@ function scratchpad_pluginfile($course, $cm, $context, $filearea, $args, $forced
     send_stored_file($file, null, 0, $forcedownload, $options);
 }
 
+/**
+ * Formats an entry for display and rewrites embedded file URLs.
+ *
+ * @param stdClass $entry Entry record.
+ * @param stdClass|false $course Course record, or false to resolve it from the entry.
+ * @param stdClass|false $cm Course module record, or false to resolve it from the entry.
+ * @return string Formatted entry text.
+ */
 function scratchpad_format_entry_text($entry, $course = false, $cm = false) {
 
     if (!$cm) {
@@ -932,43 +1003,41 @@ function scratchpad_format_entry_text($entry, $course = false, $cm = false) {
     $context = context_module::instance($cm->id);
     $entrytext = file_rewrite_pluginfile_urls($entry->text, 'pluginfile.php', $context->id, 'mod_scratchpad', 'entry', $entry->id);
 
-    $formatoptions = array(
+    $formatoptions = [
         'context' => $context,
         'noclean' => false,
-        'trusted' => false
-    );
+        'trusted' => false,
+    ];
     return format_text($entrytext, $entry->format, $formatoptions);
 }
 
 /**
-  * Obtains the automatic completion state for this scratchpad based on any conditions
-  * in scratchpad settings.
-  *
-  * @param object $course Course
-  * @param object $cm Course-module
-  * @param int $userid User ID
-  * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
-  * @return bool True if completed, false if not, $type if conditions not set.
-  */
-function scratchpad_get_completion_state($course,$cm,$userid,$type) {
-    global $CFG,$DB;
+ * Obtains the automatic completion state for this scratchpad based on any conditions
+ * in scratchpad settings.
+ *
+ * @param object $course Course
+ * @param object $cm Course-module
+ * @param int $userid User ID
+ * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
+ * @return bool True if completed, false if not, $type if conditions not set.
+ */
+function scratchpad_get_completion_state($course, $cm, $userid, $type) {
+    global $CFG, $DB;
 
-    // Get scratchpad details
-    $scratchpad = $DB->get_record('scratchpad', array('id' => $cm->instance), '*', MUST_EXIST);
+    // Get scratchpad details.
+    $scratchpad = $DB->get_record('scratchpad', ['id' => $cm->instance], '*', MUST_EXIST);
 
-    // If completion option is enabled, evaluate it and return true/false 
-    if($scratchpad->completionanswer) {
-        return $scratchpad->completionanswer <= $DB->get_field_sql("
-SELECT 
-    COUNT(1) 
-FROM 
-    {scratchpad} s
-    INNER JOIN {scratchpad_entries} se ON s.id=se.scratchpad
-WHERE
-    se.userid=:userid AND se.scratchpad=:scratchpadid",
-            array('userid'=>$userid,'scratchpadid'=>$scratchpad->id));
+    // If the completion option is enabled, evaluate it and return true or false.
+    if ($scratchpad->completionanswer) {
+        return $scratchpad->completionanswer <= $DB->get_field_sql(
+            "SELECT COUNT(1)
+               FROM {scratchpad} s
+               JOIN {scratchpad_entries} se ON s.id = se.scratchpad
+              WHERE se.userid = :userid AND se.scratchpad = :scratchpadid",
+            ['userid' => $userid, 'scratchpadid' => $scratchpad->id]
+        );
     } else {
-        // Completion option is not enabled so just return $type
+        // The completion option is not enabled, so return $type.
         return $type;
     }
 }

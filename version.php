@@ -28,7 +28,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_scratchpad';
-$plugin->version  = 2026081300;
-$plugin->requires = 2017111300;  /* Moodle 3.4 */
-$plugin->release = '1.0.2 (Build: 2026081300)';
+$plugin->version = 2026081400;
+$plugin->requires = 2024100700;
+$plugin->supported = [405, 405];
+$plugin->release = '1.0.3 (Build: 2026081400)';
 $plugin->maturity = MATURITY_STABLE;

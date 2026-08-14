@@ -23,30 +23,35 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * Defines the scratchpad activity backup structure.
+ */
 class backup_scratchpad_activity_structure_step extends backup_activity_structure_step {
-
+    /**
+     * Defines the activity data included in backups.
+     *
+     * @return backup_nested_element Activity structure.
+     */
     protected function define_structure() {
 
-        $scratchpad = new backup_nested_element('scratchpad', array('id'), array(
-            'name', 'intro', 'introformat', 'days', 'grade', 'timemodified', 'preventry', 'mode', 'completionanswer'));
+        $scratchpad = new backup_nested_element('scratchpad', ['id'], [
+            'name', 'intro', 'introformat', 'days', 'grade', 'timemodified', 'preventry', 'mode', 'completionanswer']);
 
         $entries = new backup_nested_element('entries');
 
-        $entry = new backup_nested_element('entry', array('id'), array(
+        $entry = new backup_nested_element('entry', ['id'], [
             'userid', 'modified', 'text', 'format', 'rating',
-            'entrycomment', 'teacher', 'timemarked', 'mailed'));
+            'entrycomment', 'teacher', 'timemarked', 'mailed']);
 
         // Scratchpad -> entries -> entry.
         $scratchpad->add_child($entries);
         $entries->add_child($entry);
 
         // Sources.
-        $scratchpad->set_source_table('scratchpad', array('id' => backup::VAR_ACTIVITYID));
+        $scratchpad->set_source_table('scratchpad', ['id' => backup::VAR_ACTIVITYID]);
 
         if ($this->get_setting_value('userinfo')) {
-            $entry->set_source_table('scratchpad_entries', array('scratchpad' => backup::VAR_PARENTID));
+            $entry->set_source_table('scratchpad_entries', ['scratchpad' => backup::VAR_PARENTID]);
         }
 
         // Define id annotations.

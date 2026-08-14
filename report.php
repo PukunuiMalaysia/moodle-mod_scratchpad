@@ -23,18 +23,18 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
 
-require_once("../../config.php");
-require_once("lib.php");
+require_once('../../config.php');
+require_once('lib.php');
 
 
 $id = required_param('id', PARAM_INT);   // Course module.
 
-if (! $cm = get_coursemodule_from_id('scratchpad', $id)) {
-    print_error("Course Module ID was incorrect");
+if (!$cm = get_coursemodule_from_id('scratchpad', $id)) {
+    throw new moodle_exception('invalidcoursemodule', 'mod_scratchpad');
 }
 
-if (! $course = $DB->get_record("course", array("id" => $cm->course))) {
-    print_error("Course module is misconfigured");
+if (!$course = $DB->get_record('course', ['id' => $cm->course])) {
+    throw new moodle_exception('invalidcourse', 'mod_scratchpad');
 }
 
 require_login($course, false, $cm);
@@ -44,12 +44,12 @@ $context = context_module::instance($cm->id);
 require_capability('mod/scratchpad:manageentries', $context);
 
 
-if (! $scratchpad = $DB->get_record("scratchpad", array("id" => $cm->instance))) {
-    print_error("Course module is incorrect");
+if (!$scratchpad = $DB->get_record('scratchpad', ['id' => $cm->instance])) {
+    throw new moodle_exception('invalidcoursemodule', 'mod_scratchpad');
 }
 
 // Header.
-$PAGE->set_url('/mod/scratchpad/report.php', array('id' => $id));
+$PAGE->set_url('/mod/scratchpad/report.php', ['id' => $id]);
 
 $PAGE->navbar->add(get_string("entries", "scratchpad"));
 $PAGE->set_title(get_string("modulenameplural", "scratchpad"));
@@ -60,15 +60,14 @@ echo $OUTPUT->heading(get_string("entries", "scratchpad"));
 
 
 // Make some easy ways to access the entries.
-if ( $eee = $DB->get_records("scratchpad_entries", array("scratchpad" => $scratchpad->id))) {
+if ($eee = $DB->get_records("scratchpad_entries", ["scratchpad" => $scratchpad->id])) {
     foreach ($eee as $ee) {
         $entrybyuser[$ee->userid] = $ee;
         $entrybyentry[$ee->id]  = $ee;
     }
-
 } else {
-    $entrybyuser  = array ();
-    $entrybyentry = array ();
+    $entrybyuser  = [];
+    $entrybyentry = [];
 }
 
 // Group mode.
@@ -78,10 +77,9 @@ $currentgroup = groups_get_activity_group($cm, true);
 
 // Process incoming data if there is any.
 if ($data = data_submitted()) {
-
     confirm_sesskey();
 
-    $feedback = array();
+    $feedback = [];
     $data = (array)$data;
 
     // Peel out all the data from variable names.
@@ -129,7 +127,7 @@ if ($data = data_submitted()) {
             $entrybyuser[$entry->userid]->teacher    = $USER->id;
             $entrybyuser[$entry->userid]->timemarked = $timenow;
 
-            $scratchpad = $DB->get_record("scratchpad", array("id" => $entrybyuser[$entry->userid]->scratchpad));
+            $scratchpad = $DB->get_record("scratchpad", ["id" => $entrybyuser[$entry->userid]->scratchpad]);
             $scratchpad->cmidnumber = $cm->idnumber;
 
             scratchpad_update_grades($scratchpad, $entry->userid);
@@ -137,24 +135,22 @@ if ($data = data_submitted()) {
     }
 
     // Trigger module feedback updated event.
-    $event = \mod_scratchpad\event\feedback_updated::create(array(
+    $event = \mod_scratchpad\event\feedback_updated::create([
         'objectid' => $scratchpad->id,
-        'context' => $context
-    ));
+        'context' => $context,
+    ]);
     $event->add_record_snapshot('course_modules', $cm);
     $event->add_record_snapshot('course', $course);
     $event->add_record_snapshot('scratchpad', $scratchpad);
     $event->trigger();
 
     echo $OUTPUT->notification(get_string("feedbackupdated", "scratchpad", "$count"), "notifysuccess");
-
 } else {
-
     // Trigger module viewed event.
-    $event = \mod_scratchpad\event\entries_viewed::create(array(
+    $event = \mod_scratchpad\event\entries_viewed::create([
         'objectid' => $scratchpad->id,
-        'context' => $context
-    ));
+        'context' => $context,
+    ]);
     $event->add_record_snapshot('course_modules', $cm);
     $event->add_record_snapshot('course', $course);
     $event->add_record_snapshot('scratchpad', $scratchpad);
@@ -172,14 +168,12 @@ $users = get_users_by_capability($context, 'mod/scratchpad:addentries', '', '', 
 
 if (!$users) {
     echo $OUTPUT->heading(get_string("nousersyet"));
-
 } else {
-
     groups_print_activity_menu($cm, $CFG->wwwroot . "/mod/scratchpad/report.php?id=$cm->id");
 
     $grades = make_grades_menu($scratchpad->grade);
     if (!$teachers = get_users_by_capability($context, 'mod/scratchpad:manageentries')) {
-        print_error('noentriesmanagers', 'scratchpad');
+        throw new moodle_exception('noentriesmanagers', 'mod_scratchpad');
     }
 
     echo '<form action="report.php" method="post">';
@@ -198,7 +192,7 @@ if (!$users) {
     echo "<p class=\"feedbacksave\">";
     echo "<input type=\"hidden\" name=\"id\" value=\"$cm->id\" />";
     echo "<input type=\"hidden\" name=\"sesskey\" value=\"" . sesskey() . "\" />";
-    echo "<input type=\"submit\" value=\"".get_string("saveallfeedback", "scratchpad")."\" class=\"btn btn-secondary m-t-1\"/>";
+    echo "<input type=\"submit\" value=\"" . get_string("saveallfeedback", "scratchpad") . "\" class=\"btn btn-secondary m-t-1\"/>";
     echo "</p>";
     echo "</form>";
 }

@@ -23,20 +23,20 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
 
-require_once("../../config.php");
-require_once("lib.php");
+require_once('../../config.php');
+require_once('lib.php');
 require_once($CFG->libdir . '/pdflib.php');
 
 $id = required_param('id', PARAM_INT);    // Course Module ID.
 
-if (! $cm = get_coursemodule_from_id('scratchpad', $id)) {
-    print_error("Course Module ID was incorrect");
+if (!$cm = get_coursemodule_from_id('scratchpad', $id)) {
+    throw new moodle_exception('invalidcoursemodule', 'mod_scratchpad');
 }
 
-if (! $course = $DB->get_record("course", array('id' => $cm->course))) {
-    print_error("Course is misconfigured");
+if (!$course = $DB->get_record('course', ['id' => $cm->course])) {
+    throw new moodle_exception('invalidcourse', 'mod_scratchpad');
 }
-$categoryname = $DB->get_record("course_categories", array('id' => $course->category));
+$categoryname = $DB->get_record("course_categories", ['id' => $course->category]);
 $categoryname = $categoryname->name;
 $coursename = $course->fullname;
 $username = fullname($USER);
@@ -45,89 +45,88 @@ $context = context_module::instance($cm->id);
 
 require_login($course, true, $cm);
 
-if (! $scratchpad = $DB->get_record("scratchpad", array("id" => $cm->instance))) {
-    print_error("Course module is incorrect");
+if (!$scratchpad = $DB->get_record('scratchpad', ['id' => $cm->instance])) {
+    throw new moodle_exception('invalidcoursemodule', 'mod_scratchpad');
 }
-//Retrieve sections from course, sort by section and retrieve course module ids
-if (! $cw = $DB->get_records("course_sections", array('course' => $cm->course), 'section')) {
-    print_error("Course module is incorrect");
+// Retrieve course sections in display order.
+if (!$cw = $DB->get_records('course_sections', ['course' => $cm->course], 'section')) {
+    throw new moodle_exception('invalidcoursemodule', 'mod_scratchpad');
 }
 
-$moduleid = $DB->get_record("modules", array('name' => 'scratchpad'));
+$moduleid = $DB->get_record("modules", ['name' => 'scratchpad']);
 
-//Retrieve scratchpad modules in the course, remove deleted/hiddden
-//build $modulesearch for $item 
-$moduleslist = $DB->get_records("course_modules", array('course' => $cm->course, 'module' => $moduleid->id));
+// Retrieve visible scratchpad modules in the course.
+$moduleslist = $DB->get_records("course_modules", ['course' => $cm->course, 'module' => $moduleid->id]);
 
-$modulesearch = array();
-foreach ($moduleslist as $module){
-    if ($module->deletioninprogress || !$module->visible){
-        unset ($moduleslist[$module->id]);
-    }else{
+$modulesearch = [];
+foreach ($moduleslist as $module) {
+    if ($module->deletioninprogress || !$module->visible) {
+        unset($moduleslist[$module->id]);
+    } else {
         array_push($modulesearch, $module->id);
     }
 }
-//$item is sorted using section name for display.
-$item = array();
-foreach ($cw as $section){
-    if (!isset($item[$section->section])){
-        $item[$section->section] = new stdclass;
+// Sort items using the section name for display.
+$item = [];
+foreach ($cw as $section) {
+    if (!isset($item[$section->section])) {
+        $item[$section->section] = new stdclass();
     }
-    if (empty($section->name)){
-        if ($section->section == 0){
-            $item[$section->section]->section_name="General";
-        }else{
-            $item[$section->section]->section_name="Topic " . (string)$section->section;            
+    if (empty($section->name)) {
+        if ($section->section == 0) {
+            $item[$section->section]->section_name = "General";
+        } else {
+            $item[$section->section]->section_name = "Topic " . (string)$section->section;
         }
-    }else{
-        $item[$section->section]->section_name=$section->name;
+    } else {
+        $item[$section->section]->section_name = $section->name;
     }
-    // Filter out unrelated modules in sequence
-    if (!empty($section->sequence)){
-        if (strpos($section->sequence, ',') !== false){
-            $seq = array();
-            $seq = explode(',',$section->sequence);
-            $prep = array();
-            foreach ($seq as $s){
-                if (in_array($s, $modulesearch)){
+    // Filter unrelated modules from the section sequence.
+    if (!empty($section->sequence)) {
+        if (strpos($section->sequence, ',') !== false) {
+            $seq = [];
+            $seq = explode(',', $section->sequence);
+            $prep = [];
+            foreach ($seq as $s) {
+                if (in_array($s, $modulesearch)) {
                     array_push($prep, $s);
                 }
             }
-            if (empty($prep)){
-                // Remove unneeded section
+            if (empty($prep)) {
+                // Remove unneeded sections.
                 unset($item[$section->section]);
-            }else{
+            } else {
                 $item[$section->section]->sequence = $prep;
             }
-        }else{
-            if (in_array($section->sequence, $modulesearch)){
-                $item[$section->section]->sequence=[$section->sequence];
-            }else{
+        } else {
+            if (in_array($section->sequence, $modulesearch)) {
+                $item[$section->section]->sequence = [$section->sequence];
+            } else {
                 unset($item[$section->section]);
             }
         }
-    }else{
+    } else {
         unset($item[$section->section]);
     }
 }
 
-$moduleid = $DB->get_record("modules", array('name' => 'scratchpad'));
-//Retrieve scratchpad modules in the course, remove deleted/hiddden and order by
-$moduleslist = $DB->get_records("course_modules", array('course' => $cm->course, 'module' => $moduleid->id));
-$modulesearch = array(); 
-$moduleinstance = array();
-foreach ($moduleslist as $module){
-    if ($module->deletioninprogress || !$module->visible){
-        unset ($moduleslist[$module->id]);
-    }else{
+$moduleid = $DB->get_record("modules", ['name' => 'scratchpad']);
+// Retrieve visible scratchpad modules in course order.
+$moduleslist = $DB->get_records("course_modules", ['course' => $cm->course, 'module' => $moduleid->id]);
+$modulesearch = [];
+$moduleinstance = [];
+foreach ($moduleslist as $module) {
+    if ($module->deletioninprogress || !$module->visible) {
+        unset($moduleslist[$module->id]);
+    } else {
         array_push($modulesearch, $module->id);
         $moduleinstance[$module->id] = $module->instance;
     }
 }
 
-$sp = $DB->get_records("scratchpad", array("course" => $course->id));
-foreach ($sp as $s){
-    if ($s->mode == 1){
+$sp = $DB->get_records("scratchpad", ["course" => $course->id]);
+foreach ($sp as $s) {
+    if ($s->mode == 1) {
         unset($sp[$s->id]);
     }
 }
@@ -135,43 +134,42 @@ ob_clean();
 $doc = new pdf();
 $doc->setPrintHeader(false);
 $doc->setPrintFooter(false);
-$doc->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+$doc->SetAutoPageBreak(true, PDF_MARGIN_BOTTOM);
 
 $doc->AddPage();
 
 $html = '<h1>' . $categoryname . ':' . $coursename . '</h1>';
-$html .= '<h4>' .get_string('name', 'scratchpad') . $username.'</h4>';
+$html .= '<h4>' . get_string('name', 'scratchpad') . $username . '</h4>';
 
-foreach ($item as $list){
+foreach ($item as $list) {
     $htmlsection = $htmlmodule = '';
-    $section_count = 0;
-    $htmlsection .= '<hr><h3>'. format_text($list->section_name, FORMAT_PLAIN) . '</h3>';
-    foreach ($list->sequence as $l){
-        $section_count++;
+    $sectioncount = 0;
+    $htmlsection .= '<hr><h3>' . format_text($list->section_name, FORMAT_PLAIN) . '</h3>';
+    foreach ($list->sequence as $l) {
+        $sectioncount++;
         $obj = $sp[$moduleinstance[$l]];
-        if (empty($obj)){
+        if (empty($obj)) {
             continue;
         }
         $pagetitle = $obj->name;
         $question = $obj->intro;
-        $htmlmodule = '<strong><u>'.format_text($pagetitle, FORMAT_PLAIN).'</u></strong><br>';
+        $htmlmodule = '<strong><u>' . format_text($pagetitle, FORMAT_PLAIN) . '</u></strong><br>';
         $htmlmodule .= $question;
-        
-        $entry = $DB->get_record('scratchpad_entries', array('userid' => $USER->id, 'scratchpad' => $obj->id));
+
+        $entry = $DB->get_record('scratchpad_entries', ['userid' => $USER->id, 'scratchpad' => $obj->id]);
         $text = format_text($entry->text, FORMAT_PLAIN);
-        #$text = strip_tags(html_entity_decode($text));
-        $htmlmodule .= '<p><em>'.$text.'</em></p>';
-        
-        if (!empty($htmlmodule)){
-            if ($section_count == 1){
-                $html .= $htmlsection;                
+        $htmlmodule .= '<p><em>' . $text . '</em></p>';
+
+        if (!empty($htmlmodule)) {
+            if ($sectioncount == 1) {
+                $html .= $htmlsection;
             }
             $html .= $htmlmodule;
-            $html .='<br>';
+            $html .= '<br>';
         }
     }
 }
-// output the HTML content
+// Output the HTML content.
 $doc->writeHTML($html, true, false, true, false, '');
 
-$doc->Output('Scratchpad - '.$coursename.' - '.$username.'.pdf', 'D');
+$doc->Output('Scratchpad - ' . $coursename . ' - ' . $username . '.pdf', 'D');

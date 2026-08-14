@@ -25,90 +25,81 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/course/moodleform_mod.php');
+require_once($CFG->dirroot . '/course/moodleform_mod.php');
 
+/**
+ * Defines the scratchpad activity settings form.
+ */
 class mod_scratchpad_mod_form extends moodleform_mod {
-
+    /**
+     * Defines the activity settings form.
+     */
     public function definition() {
         global $COURSE, $DB;
-        
+
         $mform = & $this->_form;
 
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
-        $mform->addElement('text', 'name', get_string('scratchpadname', 'scratchpad'), array('size' => '64'));
+        $mform->addElement('text', 'name', get_string('scratchpadname', 'scratchpad'), ['size' => '64']);
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'required', null, 'client');
 
         $this->standard_intro_elements(get_string('scratchpadquestion', 'scratchpad'));
 
-        // $options = array();
-        // $options[0] = get_string('alwaysopen', 'scratchpad');
-        // for ($i = 1; $i <= 13; $i++) {
-            // $options[$i] = get_string('numdays', '', $i);
-        // }
-        // for ($i = 2; $i <= 16; $i++) {
-            // $days = $i * 7;
-            // $options[$days] = get_string('numweeks', '', $i);
-        // }
-        // $options[365] = get_string('numweeks', '', 52);
-        // $mform->addElement('select', 'days', get_string('daysavailable', 'scratchpad'), $options);
-        // if ($COURSE->format == 'weeks') {
-            // $mform->setDefault('days', '7');
-        // } else {
-            // $mform->setDefault('days', '0');
-        // }
-        
-        $link = $DB->get_records("scratchpad", array("course" => $COURSE->id));
-        $current_id = optional_param('update', '', PARAM_INT);    // Course Module ID.
+        $link = $DB->get_records('scratchpad', ['course' => $COURSE->id]);
+        $currentid = optional_param('update', '', PARAM_INT);
         $cm = '';
 
-        $options = array();
+        $options = [];
         $options[0] = get_string('blankentry', 'scratchpad');
-        foreach($link as $a){
+        foreach ($link as $a) {
             $options[$a->id] = $a->name;
         }
 
-        // Added checking for empty $current_id which triggers error for PostgreSQL
-        if (!empty($current_id)){
-            $cm = get_coursemodule_from_id('scratchpad', $current_id);
+        // Avoid passing an empty course module ID to PostgreSQL.
+        if (!empty($currentid)) {
+            $cm = get_coursemodule_from_id('scratchpad', $currentid);
         }
 
-        if (!empty($cm)){
+        if (!empty($cm)) {
             unset($options[$cm->instance]);
         }
         $mform->addElement('select', 'preventry', get_string('preventry', 'scratchpad'), $options);
-        // $this->standard_grading_coursemodule_elements();
-
-        $options = array();
+        $options = [];
         $options[0] = get_string('viewmode', 'scratchpad');
         $options[1] = get_string('downloadmode', 'scratchpad');
         $mform->addElement('select', 'mode', get_string('mode', 'scratchpad'), $options);
-        
+
         $this->standard_coursemodule_elements();
 
         $this->add_action_buttons();
     }
 
-    function data_preprocessing(&$default_values) {
-        parent::data_preprocessing($default_values);
+    /**
+     * Preprocesses completion settings before displaying the form.
+     *
+     * @param array $defaultvalues Default form values.
+     */
+    public function data_preprocessing(&$defaultvalues) {
+        parent::data_preprocessing($defaultvalues);
 
         // Set up the completion checkboxes which aren't part of standard data.
         // We also make the default value (if you turn on the checkbox) for those
         // numbers to be 1, this will not apply unless checkbox is ticked.
-        $default_values['completionanswerenabled']=
-            !empty($default_values['completionanswer']) ? 1 : 0;
-        if (empty($default_values['completionanswer'])) {
-            $default_values['completionanswer']=1;
+        $defaultvalues['completionanswerenabled'] =
+            !empty($defaultvalues['completionanswer']) ? 1 : 0;
+        if (empty($defaultvalues['completionanswer'])) {
+            $defaultvalues['completionanswer'] = 1;
         }
         // Tick by default if Add mode or if completion posts settings is set to 1 or more.
-        if (empty($this->_instance) || !empty($default_values['completionanswer'])) {
-            $default_values['completionanswerenabled'] = 1;
+        if (empty($this->_instance) || !empty($defaultvalues['completionanswer'])) {
+            $defaultvalues['completionanswerenabled'] = 1;
         } else {
-            $default_values['completionanswerenabled'] = 0;
+            $defaultvalues['completionanswerenabled'] = 0;
         }
-        if (empty($default_values['completionanswer'])) {
-            $default_values['completionanswer']=1;
+        if (empty($defaultvalues['completionanswer'])) {
+            $defaultvalues['completionanswer'] = 1;
         }
     }
 
@@ -120,19 +111,23 @@ class mod_scratchpad_mod_form extends moodleform_mod {
     public function add_completion_rules() {
         $mform =& $this->_form;
 
-        $group=array();
-        $group[] =& $mform->createElement('checkbox', 'completionanswerenabled', '', get_string('completionanswer','scratchpad'));
-        // $group[] =& $mform->createElement('text', 'completionanswer', '', array('size'=>3));
-        $mform->setType('completionanswer',PARAM_INT);
-        $mform->addGroup($group, 'completionanswergroup', get_string('completionanswergroup','scratchpad'), array(' '), false);
-        // $mform->addHelpButton('completionanswergroup', 'completionanswer', 'scratchpad');
-        $mform->disabledIf('completionanswer','completionanswerenabled','notchecked');
+        $group = [];
+        $group[] =& $mform->createElement('checkbox', 'completionanswerenabled', '', get_string('completionanswer', 'scratchpad'));
+        $mform->setType('completionanswer', PARAM_INT);
+        $mform->addGroup($group, 'completionanswergroup', get_string('completionanswergroup', 'scratchpad'), [' '], false);
+        $mform->disabledIf('completionanswer', 'completionanswerenabled', 'notchecked');
 
-        return array('completionanswergroup');
+        return ['completionanswergroup'];
     }
 
-    function completion_rule_enabled($data) {
-        return (!empty($data['completionanswerenabled']) && $data['completionanswer']!=0);
+    /**
+     * Returns whether the custom completion rule is enabled.
+     *
+     * @param array $data Form data.
+     * @return bool
+     */
+    public function completion_rule_enabled($data) {
+        return (!empty($data['completionanswerenabled']) && $data['completionanswer'] != 0);
     }
 
     /**
@@ -143,18 +138,18 @@ class mod_scratchpad_mod_form extends moodleform_mod {
      *
      * @return object submitted data; NULL if not valid or not submitted or cancelled
      */
-    function get_data() {
+    public function get_data() {
         $data = parent::get_data();
         if (!$data) {
             return $data;
         }
         if (!empty($data->completionunlocked)) {
-            // Turn off completion settings if the checkboxes aren't ticked
-            $autocompletion = !empty($data->completion) && $data->completion==COMPLETION_TRACKING_AUTOMATIC;
+            // Turn off completion settings if the checkboxes are not selected.
+            $autocompletion = !empty($data->completion) && $data->completion == COMPLETION_TRACKING_AUTOMATIC;
             if (empty($data->completionanswerenabled) || !$autocompletion) {
-               $data->completionanswer = 0;
-            }else{
-               $data->completionanswer = 1;
+                $data->completionanswer = 0;
+            } else {
+                $data->completionanswer = 1;
             }
         }
         return $data;
@@ -170,13 +165,13 @@ class mod_scratchpad_mod_form extends moodleform_mod {
      */
     public function data_postprocessing($data) {
         parent::data_postprocessing($data);
-        // Turn off completion settings if the checkboxes aren't ticked
+        // Turn off completion settings if the checkboxes are not selected.
         if (!empty($data->completionunlocked)) {
-            $autocompletion = !empty($data->completion) && $data->completion==COMPLETION_TRACKING_AUTOMATIC;
+            $autocompletion = !empty($data->completion) && $data->completion == COMPLETION_TRACKING_AUTOMATIC;
             if (empty($data->completionanswerenabled) || !$autocompletion) {
-               $data->completionanswer = 0;
-            }else{
-               $data->completionanswer = 1;
+                $data->completionanswer = 0;
+            } else {
+                $data->completionanswer = 1;
             }
         }
     }

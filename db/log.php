@@ -25,11 +25,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$logs = array(
-    array('module' => 'scratchpad', 'action' => 'view', 'mtable' => 'scratchpad', 'field' => 'name'),
-    array('module' => 'scratchpad', 'action' => 'view all', 'mtable' => 'scratchpad', 'field' => 'name'),
-    array('module' => 'scratchpad', 'action' => 'view responses', 'mtable' => 'scratchpad', 'field' => 'name'),
-    array('module' => 'scratchpad', 'action' => 'add entry', 'mtable' => 'scratchpad', 'field' => 'name'),
-    array('module' => 'scratchpad', 'action' => 'update entry', 'mtable' => 'scratchpad', 'field' => 'name'),
-    array('module' => 'scratchpad', 'action' => 'update feedback', 'mtable' => 'scratchpad', 'field' => 'name')
-);
+$logs = [
+    ['module' => 'scratchpad', 'action' => 'view', 'mtable' => 'scratchpad', 'field' => 'name'],
+    ['module' => 'scratchpad', 'action' => 'view all', 'mtable' => 'scratchpad', 'field' => 'name'],
+    ['module' => 'scratchpad', 'action' => 'view responses', 'mtable' => 'scratchpad', 'field' => 'name'],
+    ['module' => 'scratchpad', 'action' => 'add entry', 'mtable' => 'scratchpad', 'field' => 'name'],
+    ['module' => 'scratchpad', 'action' => 'update entry', 'mtable' => 'scratchpad', 'field' => 'name'],
+    ['module' => 'scratchpad', 'action' => 'update feedback', 'mtable' => 'scratchpad', 'field' => 'name'],
+];

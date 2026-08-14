@@ -27,8 +27,6 @@
 
 namespace mod_scratchpad\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_scratchpad instance list viewed event class.
  *

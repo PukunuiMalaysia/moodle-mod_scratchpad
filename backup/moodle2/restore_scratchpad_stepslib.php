@@ -22,14 +22,19 @@
  * @copyright  2021 Tengku Alauddin - din@pukunui.net
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
- 
-defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Restores the scratchpad activity structure and entry data.
+ */
 class restore_scratchpad_activity_structure_step extends restore_activity_structure_step {
-
+    /**
+     * Defines the paths restored for this activity.
+     *
+     * @return restore_path_element[] Restore paths.
+     */
     protected function define_structure() {
 
-        $paths = array();
+        $paths = [];
         $paths[] = new restore_path_element('scratchpad', '/activity/scratchpad');
 
         if ($this->get_setting_value('userinfo')) {
@@ -39,11 +44,16 @@ class restore_scratchpad_activity_structure_step extends restore_activity_struct
         return $this->prepare_activity_structure($paths);
     }
 
+    /**
+     * Restores the scratchpad activity record.
+     *
+     * @param array|stdClass $data Restored activity data.
+     */
     protected function process_scratchpad($data) {
 
         global $DB;
 
-        $data = (Object)$data;
+        $data = (object)$data;
 
         unset($data->id);
 
@@ -55,11 +65,16 @@ class restore_scratchpad_activity_structure_step extends restore_activity_struct
         $this->apply_activity_instance($newid);
     }
 
+    /**
+     * Restores one scratchpad entry.
+     *
+     * @param array|stdClass $data Restored entry data.
+     */
     protected function process_scratchpad_entry($data) {
 
         global $DB;
 
-        $data = (Object)$data;
+        $data = (object)$data;
 
         $oldid = $data->id;
         unset($data->id);
@@ -74,6 +89,9 @@ class restore_scratchpad_activity_structure_step extends restore_activity_struct
         $this->set_mapping('scratchpad_entry', $oldid, $newid);
     }
 
+    /**
+     * Restores related files after record processing.
+     */
     protected function after_execute() {
         $this->add_related_files('mod_scratchpad', 'intro', null);
         $this->add_related_files('mod_scratchpad_entries', 'text', null);

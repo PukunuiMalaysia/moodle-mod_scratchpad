@@ -23,21 +23,22 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
 
-defined('MOODLE_INTERNAL') || die();
+/**
+ * Performs mod_scratchpad database upgrades.
+ *
+ * @param int $oldversion Previously installed plugin version.
+ * @return bool
+ */
+function xmldb_scratchpad_upgrade($oldversion = 0) {
+    global $DB;
 
-require_once($CFG->dirroot.'/mod/scratchpad/lib.php');
-
-function xmldb_scratchpad_upgrade($oldversion=0) {
-    global $CFG, $DB;
-
-    $dbman = $DB->get_manager();
     if ($oldversion < 2021113007) {
-        #Cleanup for text
-        $search = array("<br />", "<br>", "><", '&nbsp;');
-        $replace  = array("\n", "\n", ">\n<", ' ');
+        // Clean up legacy HTML stored in entry text.
+        $search = ["<br />", "<br>", "><", '&nbsp;'];
+        $replace  = ["\n", "\n", ">\n<", ' '];
 
         $rs = $DB->get_recordset_sql('SELECT id, text FROM {scratchpad_entries}', []);
-        foreach ($rs as $record){
+        foreach ($rs as $record) {
             $newline = str_replace($search, $replace, $record->text);
             $newline = strip_tags(html_entity_decode($newline));
             $record->text = $newline;
@@ -45,6 +46,8 @@ function xmldb_scratchpad_upgrade($oldversion=0) {
             $DB->update_record('scratchpad_entries', $record);
         }
         $rs->close();
+
+        upgrade_mod_savepoint(true, 2021113007, 'scratchpad');
     }
     return true;
 }
