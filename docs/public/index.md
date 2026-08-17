@@ -1,5 +1,7 @@
 ---
 title: Scratchpad activity
+category: Activities
+nav_order: 10
 ---
 
 # Scratchpad activity
