@@ -6,66 +6,93 @@ nav_order: 10
 
 # Scratchpad activity
 
-Scratchpad gives Moodle learners a private place to respond to a focused reflection prompt. Teachers can review every submitted entry, award a grade, and provide individual feedback without leaving the activity.
+Scratchpad gives Moodle learners a focused private reflection space while giving teachers one workflow for reviewing entries, awarding grades, writing feedback, and using answers in activity completion.
 
-The plugin supports Moodle 5.2 on the `MOODLE_502_STABLE` branch.
+## Key features
 
-## What Scratchpad provides
+- Present a teacher-defined reflection prompt and one private learner response.
+- Let learners return to edit their entry.
+- Bring submitted entries, grades, and written feedback into a consolidated teacher report.
+- Display reviewed grades and feedback with the learner's reflection.
+- Support answer-based activity completion and Moodle gradebook integration.
+- Provide download output suitable for saving reflections as PDF.
+- Include Moodle backup, restore, mobile service, events, and Privacy API support.
 
-- Individual student reflection entries.
-- Prompts that teachers can tailor to a course or learning activity.
-- A consolidated teacher report for reading and grading entries.
-- Written feedback displayed with the student's reflection.
-- Automatic activity completion after a learner submits an answer.
-- A download mode for producing PDF reflections.
-- Moodle Privacy API support for stored entries, feedback, ratings, and user identifiers.
+## Screenshots
 
-## Learner experience
+### Learner reflection
 
-The activity keeps the prompt and the learner's response together, making the next action clear and keeping reflection work focused.
+![Learner viewing a completed Scratchpad reflection](images/student-reflection.jpg)
 
-![A student viewing a completed Scratchpad reflection](images/student-reflection.jpg)
+*The prompt and response remain together in the learner view. All people, courses, and reflection content shown are fictional demonstration data.*
 
-Students can return to edit their entry. Once a teacher has reviewed it, the grade and written feedback appear directly beneath the reflection.
+### Learner feedback
 
-![A student viewing a Scratchpad grade and teacher feedback](images/student-feedback.jpg)
+![Learner viewing a Scratchpad grade and teacher feedback](images/student-feedback.jpg)
 
-## Course completion
+*Reviewed feedback appears beneath the learner's reflection. All people, courses, grades, and reflection content shown are fictional demonstration data.*
 
-Teachers can require a student to answer the activity before Moodle marks it complete. This allows Scratchpad to participate in course progress tracking and completion reports.
+### Course completion
 
-![A completed Scratchpad activity in a Moodle course](images/course-completion.jpg)
+![Completed Scratchpad activity in a Moodle course](images/course-completion.jpg)
 
-## Teacher experience
+*Scratchpad can contribute to Moodle course progress after a response is submitted. All people, courses, and completion data shown are fictional demonstration data.*
 
-The entries report brings the student's response, grade selector, and written feedback field into one review workflow.
+### Teacher grading
 
-![A teacher grading a Scratchpad entry and writing feedback](images/teacher-grading.jpg)
+![Teacher grading a Scratchpad entry and writing feedback](images/teacher-grading.jpg)
 
-The activity overview also shows how many entries are ready for review and links directly to the report.
+*The teacher report combines the response, grade selector, and feedback field. All people, courses, grades, and reflection content shown are fictional demonstration data.*
 
-![The Scratchpad teacher overview with a link to submitted entries](images/teacher-overview.jpg)
+### Teacher overview
 
-All people and reflection content shown in these screenshots are fictional demonstration data.
+![Scratchpad teacher overview linking to submitted entries](images/teacher-overview.jpg)
 
-## Add Scratchpad to a course
+*The activity overview shows how many entries are ready for review. All people, courses, and submission data shown are fictional demonstration data.*
 
-1. Turn editing on in the Moodle course.
-2. Select **Add an activity or resource**.
-3. Choose **Scratchpad**.
-4. Enter an activity name and reflection question.
-5. Configure the mode, grading, availability, and completion conditions required by the course.
-6. Save the activity and verify it with a student account.
+## Requirements
 
-## Privacy and data
+- Moodle 5.2.
+- A course in which a teacher can add activities and learners can submit responses.
+- No external service or additional Moodle plugin is required.
 
-Scratchpad stores student entry text, teacher feedback, ratings, and related user identifiers in Moodle. Its Privacy API provider supports metadata, export, and deletion requests. The plugin does not send this information to an external service.
+## Installation
 
-Administrators should apply their normal Moodle retention, role, capability, backup, and privacy policies to Scratchpad activities.
+Download the Scratchpad ZIP from its verified [Moodle Marketplace listing](https://marketplace.moodle.com/plugins/mod_scratchpad). In Moodle, open **Site administration > Plugins > Install plugins**, upload the ZIP, complete validation, and follow the displayed upgrade steps.
 
-## Support
+## Configuration and use
 
-- Issues and bug reports: [Pukunui Malaysia](https://pukunui.com/home/location/malaysia/).
-- Subscription terms and support: [Pukunui Plugin Subscription Terms & Support Policy](https://pukunui.com/docs/policy-moodle-marketplace/).
+### Add a Scratchpad activity
 
-Scratchpad is licensed under the GNU General Public License v3 or later.
+Turn editing on in a course, choose **Add an activity or resource**, select **Scratchpad**, then set the activity name, reflection question, grading, availability, and completion conditions. Save the activity and review the learner view.
+
+### Learner workflow
+
+The learner opens the activity, reads the prompt, enters or updates a reflection, and saves it. If the activity uses answer-based completion, Moodle marks it complete after the required response is submitted.
+
+### Teacher workflow
+
+Open the activity report to review entries. Select a grade and enter written feedback for each learner, then save the review so the result appears in the learner view and Moodle gradebook where configured.
+
+## Privacy and permissions
+
+Scratchpad stores learner entry text, teacher feedback, ratings, and related user identifiers in Moodle. Its Privacy API provider declares the data, exports it for privacy requests, and supports deletion. The plugin does not send this information to an external service.
+
+Moodle capabilities control activity viewing, entry management, reporting, grading, and downloads. Administrators should apply normal course roles, retention, backup, and privacy policies to Scratchpad activities.
+
+## Troubleshooting
+
+- If a learner cannot enter a response, confirm enrolment, activity availability, and the relevant Scratchpad capability.
+- If completion does not update, confirm that course completion is enabled and the activity completion condition requires a response.
+- If feedback is not visible, confirm that the review was saved and the learner is opening the correct activity.
+- If a download is incomplete, check that the response and feedback have been saved before using the download option.
+
+## Support and licence
+
+- [Report a Scratchpad product issue](https://github.com/PukunuiMalaysia/moodle-docs/issues/new?template=product-bug.yml)
+- [Request a Scratchpad feature](https://github.com/PukunuiMalaysia/moodle-docs/issues/new?template=feature.yml)
+- [Report a documentation issue](https://github.com/PukunuiMalaysia/moodle-docs/issues/new?template=documentation.yml)
+- [Pukunui Plugin Subscription Terms & Support Policy](https://pukunui.com/docs/policy-moodle-marketplace/)
+- [Pukunui Malaysia](https://pukunui.com/location/malaysia/)
+
+Scratchpad is licensed under the GNU General Public License v3 or later. This documentation is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
